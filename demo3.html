@@ -4,58 +4,58 @@
 </head>
 <body>
 <h3>Demoskolan del3, sprites</h3>
-Hej och välkomna till del 3 i Albert's demoskola. Jag har fått vissa klagomål 
-på förra delen, bl a att den var stökigt skriven och att det var för svårt att 
-hänga med och förstå någonting. Därför tänkte jag  vänta med 3D vektorgrafik 
-till nästa del och gå igenom nått lite mer lättsmält den här gången, nämligen 
-Sprites och hur man får upp en TGA bild på skärmen. Dessutom ska jag gå igenom 
+Hej och vÃ¤lkomna till del 3 i Albert's demoskola. Jag har fÃ¥tt vissa klagomÃ¥l 
+pÃ¥ fÃ¶rra delen, bl a att den var stÃ¶kigt skriven och att det var fÃ¶r svÃ¥rt att 
+hÃ¤nga med och fÃ¶rstÃ¥ nÃ¥gonting. DÃ¤rfÃ¶r tÃ¤nkte jag  vÃ¤nta med 3D vektorgrafik 
+till nÃ¤sta del och gÃ¥ igenom nÃ¥tt lite mer lÃ¤ttsmÃ¤lt den hÃ¤r gÃ¥ngen, nÃ¤mligen 
+Sprites och hur man fÃ¥r upp en TGA bild pÃ¥ skÃ¤rmen. Dessutom ska jag gÃ¥ igenom 
 hur man skriver funktioner i ren assembler i en separat fil och hur man anropar 
-dessa funktioner från C-programmet.
+dessa funktioner frÃ¥n C-programmet.
 <p>
 
 
-<h4>VAD ÄR EN SPRITE?</h4>
+<h4>VAD Ã„R EN SPRITE?</h4>
 
-En sprite är en liten rektangulär, punktuppbyggd bild som kan föreställa
-t ex en boll eller en gubbe i ett spel. I stort sett alla spel innehåller
-sprites, i ett schackspel brukar pjäserna vara sprites (om det inte är 3D).
-I DOOM är alla monster sprites och i bilspel brukar bilarna vara sprites.
-Ett objekt behöver inte bestå av bara en sprite. I ett bilspel där man ser 
-bilarna uppifrån (typ micromachines) kan varje bil bestå av 4 sprites. En där
-bilen är vänd uppåt, en där bilen är vänd åt vänster, en nedåt och en åt höger.
-Sen är det upp till programmet och avgöra åt vilket håll bilen är vänd och visa
-rätt sprite. I fallet med bilspelet borde man ha minst 8, helst 16 sprites för
-att kunna visa bilen i flera riktningar och få mjukare svängar.
+En sprite Ã¤r en liten rektangulÃ¤r, punktuppbyggd bild som kan fÃ¶restÃ¤lla
+t ex en boll eller en gubbe i ett spel. I stort sett alla spel innehÃ¥ller
+sprites, i ett schackspel brukar pjÃ¤serna vara sprites (om det inte Ã¤r 3D).
+I DOOM Ã¤r alla monster sprites och i bilspel brukar bilarna vara sprites.
+Ett objekt behÃ¶ver inte bestÃ¥ av bara en sprite. I ett bilspel dÃ¤r man ser 
+bilarna uppifrÃ¥n (typ micromachines) kan varje bil bestÃ¥ av 4 sprites. En dÃ¤r
+bilen Ã¤r vÃ¤nd uppÃ¥t, en dÃ¤r bilen Ã¤r vÃ¤nd Ã¥t vÃ¤nster, en nedÃ¥t och en Ã¥t hÃ¶ger.
+Sen Ã¤r det upp till programmet och avgÃ¶ra Ã¥t vilket hÃ¥ll bilen Ã¤r vÃ¤nd och visa
+rÃ¤tt sprite. I fallet med bilspelet borde man ha minst 8, helst 16 sprites fÃ¶r
+att kunna visa bilen i flera riktningar och fÃ¥ mjukare svÃ¤ngar.
 <p>
-De flesta datorer har idag hårdvarustöd för att rita ut sprites (på Amigan fanns
-det redan för 10 år sedan), bitblt brukar det kallas och det står för bit blast 
-och betyder ungefär punktbombardemang. På PC'n blir det dock lite mera 
-komplicerat. De flesta grafikorten till pc har stöd för bitblt men tyvärr finns 
-det ingen standard så det är ingen idé att använda sig av bitblt eftersom det 
-bara kommer att fungera på de datorer som har samma grafikkort som ens egen 
-dator. Men om någon är intresserad av att försöka så finns det en grundlig 
-genomgång av de flesta nu existerande grafikkorten till pc i boken "Programmers 
+De flesta datorer har idag hÃ¥rdvarustÃ¶d fÃ¶r att rita ut sprites (pÃ¥ Amigan fanns
+det redan fÃ¶r 10 Ã¥r sedan), bitblt brukar det kallas och det stÃ¥r fÃ¶r bit blast 
+och betyder ungefÃ¤r punktbombardemang. PÃ¥ PC'n blir det dock lite mera 
+komplicerat. De flesta grafikorten till pc har stÃ¶d fÃ¶r bitblt men tyvÃ¤rr finns 
+det ingen standard sÃ¥ det Ã¤r ingen idÃ© att anvÃ¤nda sig av bitblt eftersom det 
+bara kommer att fungera pÃ¥ de datorer som har samma grafikkort som ens egen 
+dator. Men om nÃ¥gon Ã¤r intresserad av att fÃ¶rsÃ¶ka sÃ¥ finns det en grundlig 
+genomgÃ¥ng av de flesta nu existerande grafikkorten till pc i boken "Programmers 
 Guide to the Ega, Vga and SuperVga Cards" av Richard Ferraro.
 <p>
-Eftersom det inte finns någon standard så får vi själva skriva sprite 
-rutinerna. För att få rutinerna så snabba som möjligt har jag använt
-32-bitars instruktioner (movsd) som flyttar 32 bitar i taget vilket är 4 bytes.
-Det betyder att varje sprite i, x-led, måste ha ett, jämnt delbart med 4, antal
-punkter. En sprite kan alltså vara t ex 16, 20, 24, 28 eller 32 punkter bred. 
-Höjden kan vara mellan 1 och 199 punkter. Eftersom vi använder MCGA (mod 13h) 
-så finns det 256 färger vilket gör att varje punkt i spriten blir en byte.
+Eftersom det inte finns nÃ¥gon standard sÃ¥ fÃ¥r vi sjÃ¤lva skriva sprite 
+rutinerna. FÃ¶r att fÃ¥ rutinerna sÃ¥ snabba som mÃ¶jligt har jag anvÃ¤nt
+32-bitars instruktioner (movsd) som flyttar 32 bitar i taget vilket Ã¤r 4 bytes.
+Det betyder att varje sprite i, x-led, mÃ¥ste ha ett, jÃ¤mnt delbart med 4, antal
+punkter. En sprite kan alltsÃ¥ vara t ex 16, 20, 24, 28 eller 32 punkter bred. 
+HÃ¶jden kan vara mellan 1 och 199 punkter. Eftersom vi anvÃ¤nder MCGA (mod 13h) 
+sÃ¥ finns det 256 fÃ¤rger vilket gÃ¶r att varje punkt i spriten blir en byte.
 <p>
-Jag lagrar spriten så här:<br>
-Först 2 bytes (en integer) för höjden på spriten och sedan 2 bytes
-för bredden och sedan en byte för varje pixel i spriten. Det brukar kallas
-för rådataformat.
+Jag lagrar spriten sÃ¥ hÃ¤r:<br>
+FÃ¶rst 2 bytes (en integer) fÃ¶r hÃ¶jden pÃ¥ spriten och sedan 2 bytes
+fÃ¶r bredden och sedan en byte fÃ¶r varje pixel i spriten. Det brukar kallas
+fÃ¶r rÃ¥dataformat.
 <p>
-<b>VARNING</b> vissa rådatafiler har bredden först sen höjden, men jag har höjden 
-        först eftersom det passar spriterutinerna bättre.
+<b>VARNING</b> vissa rÃ¥datafiler har bredden fÃ¶rst sen hÃ¶jden, men jag har hÃ¶jden 
+        fÃ¶rst eftersom det passar spriterutinerna bÃ¤ttre.
 
-<b>EX</b>, en sprite som är 20 pixels hög och 16 pixels bred blir:
+<b>EX</b>, en sprite som Ã¤r 20 pixels hÃ¶g och 16 pixels bred blir:
 <pre>
-Höjd   Bredd
+HÃ¶jd   Bredd
 0, 20, 0, 16, 
 
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0         Rad 1 16 bytes
@@ -63,121 +63,121 @@ Höjd   Bredd
                                         .
 O S V . . . i 18 rader till             .
 </pre>
-Det är dock ganska jobbigt att skriva in alla spritar för hand. Jag brukar
-rita spritarna i något rit-program (t ex 3d studio) och spara dem i TGA format.
-Sedan översätter jag från tga-format till mitt eget sprite format med hjälp av
-ett litet c-program (tga2spr.c) som följer med demo3.zip. tga2spr klarar bara
-av 256-färgers tga-bilder men det går att konvertera true-color tga till 256
-färgers tga i de flesta ritprogram (t ex Corel Photopaint eller Fauve Matisse).
+Det Ã¤r dock ganska jobbigt att skriva in alla spritar fÃ¶r hand. Jag brukar
+rita spritarna i nÃ¥got rit-program (t ex 3d studio) och spara dem i TGA format.
+Sedan Ã¶versÃ¤tter jag frÃ¥n tga-format till mitt eget sprite format med hjÃ¤lp av
+ett litet c-program (tga2spr.c) som fÃ¶ljer med demo3.zip. tga2spr klarar bara
+av 256-fÃ¤rgers tga-bilder men det gÃ¥r att konvertera true-color tga till 256
+fÃ¤rgers tga i de flesta ritprogram (t ex Corel Photopaint eller Fauve Matisse).
 <p>
-Jag har gjort några <b>sprite rutiner</b>:
+Jag har gjort nÃ¥gra <b>sprite rutiner</b>:
 <p>
 <ul>
 <li><b>loadsprite</b>( Namn, Sprite);              //laddar in en sprite till minnet<br>
-<li><b>show32spr</b>( x, y, Sprite, Destination);  //visar en sprite från minnet<br>
+<li><b>show32spr</b>( x, y, Sprite, Destination);  //visar en sprite frÃ¥n minnet<br>
 <li><b>showtrans</b>( x, y, Sprite, Destination);  //visar en genomskinlig sprite<br>
-<li><b>sudda32bit</b>( x, y, Bredd, Höjd, Destination); //suddar ett rektangulärt område<br>
-<li><b>get32spr</b>(x, y, source, sprite, bredd, hojd); //klipper ut en sprite från skärmen (eller en virtuell skärm)
+<li><b>sudda32bit</b>( x, y, Bredd, HÃ¶jd, Destination); //suddar ett rektangulÃ¤rt omrÃ¥de<br>
+<li><b>get32spr</b>(x, y, source, sprite, bredd, hojd); //klipper ut en sprite frÃ¥n skÃ¤rmen (eller en virtuell skÃ¤rm)
 </ul>
 <p>
-<b>Loadsprite </b>laddar in spriten med namnet Namn till Sprite. Sprite är en array
-som man får se till är tillräckligt stor för att rymma hela spriten.
+<b>Loadsprite </b>laddar in spriten med namnet Namn till Sprite. Sprite Ã¤r en array
+som man fÃ¥r se till Ã¤r tillrÃ¤ckligt stor fÃ¶r att rymma hela spriten.
 <b>Ex:</b>
 char Sprite[2 + MAXBREDD*MAXHOJD];<br>
 loadsprite("minsprite.spr", Sprite);<br>
 <p>
-<b>show32spr </b>kopierar spriten Sprite till x,y i destinationen med hjälp av
+<b>show32spr </b>kopierar spriten Sprite till x,y i destinationen med hjÃ¤lp av
 32bits instruktionen movsd.
 <p>
 <b>Ex:</b>
 screen=0x0a0000000;<br>
 show32spr(10,20, Sprite, screen);<br>
 <p>
-kopierar Sprite med övre vänstra hörnet i (10,20) på skärmen, screen är en
-pekare till skärmen (0x0a000:0000).
+kopierar Sprite med Ã¶vre vÃ¤nstra hÃ¶rnet i (10,20) pÃ¥ skÃ¤rmen, screen Ã¤r en
+pekare till skÃ¤rmen (0x0a000:0000).
 <p>
-<b>Showtrans </b>visar spriten med färg 0 genomskinlig. Om bakgrunden inte är svart
-och spriten är svart i kanterna används alltid showtrans. Showtrans är 
-långsammare än show32spr så om bakgrunden är svart används show32spr med 
-fördel.
+<b>Showtrans </b>visar spriten med fÃ¤rg 0 genomskinlig. Om bakgrunden inte Ã¤r svart
+och spriten Ã¤r svart i kanterna anvÃ¤nds alltid showtrans. Showtrans Ã¤r 
+lÃ¥ngsammare Ã¤n show32spr sÃ¥ om bakgrunden Ã¤r svart anvÃ¤nds show32spr med 
+fÃ¶rdel.
 <p>
-<b>Sudda32bit </b>sätter ett område, vid (x,y) med bredden bredd och höjden hojd,
-i dest till svart. Sudda32bit används för att sudda ut en sprite om bakgrunden
-är svart. Om bakgrunden inte är svart får man först klippa ut bakgrunden med
-get32spr innan man ritar ut spriten och för att sudda spriten ritar man sedan 
+<b>Sudda32bit </b>sÃ¤tter ett omrÃ¥de, vid (x,y) med bredden bredd och hÃ¶jden hojd,
+i dest till svart. Sudda32bit anvÃ¤nds fÃ¶r att sudda ut en sprite om bakgrunden
+Ã¤r svart. Om bakgrunden inte Ã¤r svart fÃ¥r man fÃ¶rst klippa ut bakgrunden med
+get32spr innan man ritar ut spriten och fÃ¶r att sudda spriten ritar man sedan 
 tillbaka bakgrunden med show32spr.
 <p>
-<b>Get32spr </b>klipper alltså ut bakgrunden vid x, y i source och placerar resultatet
-i dest. Source är lämpligen skärmen eller en virtuell skärm med bredden 320
-och dest är en sprite.
+<b>Get32spr </b>klipper alltsÃ¥ ut bakgrunden vid x, y i source och placerar resultatet
+i dest. Source Ã¤r lÃ¤mpligen skÃ¤rmen eller en virtuell skÃ¤rm med bredden 320
+och dest Ã¤r en sprite.
 <p>
 <pre>
- !OBS  Om man använder en virtuell skärm måste den vara 320 bytes bred  OBS!
+ !OBS  Om man anvÃ¤nder en virtuell skÃ¤rm mÃ¥ste den vara 320 bytes bred  OBS!
  !OBS           eftersom alla spritefunktioner antar det                OBS!
 </pre>
-Alla spritefunktioner finns i d3asm.asm och är kommenterade.
+Alla spritefunktioner finns i d3asm.asm och Ã¤r kommenterade.
 <p>
 
 <h3>HUR VISAS FLERA SPRITES SAMTIDIGT?</h3>
 <p>
-Problemet är att det bara finns en palett. Om sprite 1 har 100 färger och
-sprite 2 har 80 färger går det naturligtvis att passa in båda spritarnas
-färger i samma palett, eftersom antalet färger är mindre än 256. Men om man 
-vill ha en bakgrundsbild samtidigt och mer än 2 sprites då?
+Problemet Ã¤r att det bara finns en palett. Om sprite 1 har 100 fÃ¤rger och
+sprite 2 har 80 fÃ¤rger gÃ¥r det naturligtvis att passa in bÃ¥da spritarnas
+fÃ¤rger i samma palett, eftersom antalet fÃ¤rger Ã¤r mindre Ã¤n 256. Men om man 
+vill ha en bakgrundsbild samtidigt och mer Ã¤n 2 sprites dÃ¥?
 <p>
-Det finns naturligtvis många sätt att göra detta, jag valde att göra en 
-palett först. Sedan skrev jag c-program som anpassade tga-bilder och 
-sprites till paletten. Programmet läser först in en bild med palett och sedan
-läses paletten som bilden ska anpassas till in. Programmet jämför de båda
-paletterna och bestämmer vilka färger i palett 2 som är närmast färgerna i
-palett 1. På så sätt räknas en utbytes array ut. Sedan byts punkterna i
+Det finns naturligtvis mÃ¥nga sÃ¤tt att gÃ¶ra detta, jag valde att gÃ¶ra en 
+palett fÃ¶rst. Sedan skrev jag c-program som anpassade tga-bilder och 
+sprites till paletten. Programmet lÃ¤ser fÃ¶rst in en bild med palett och sedan
+lÃ¤ses paletten som bilden ska anpassas till in. Programmet jÃ¤mfÃ¶r de bÃ¥da
+paletterna och bestÃ¤mmer vilka fÃ¤rger i palett 2 som Ã¤r nÃ¤rmast fÃ¤rgerna i
+palett 1. PÃ¥ sÃ¥ sÃ¤tt rÃ¤knas en utbytes array ut. Sedan byts punkterna i
 bilden ut enligt utbytesarrayen och den nya anpassade bilden sparas under ett
 nytt namn. C-filerna heter <b>passtga.c </b>och <b>passpr.c. </b>
 <p>
-<b>Passtga </b>läser en 256-färgers tga bild och en palett och sparar rådata, 
-samma som spritarna. Höjden, bredden och sedan data pixel för pixel. 
-<b>Passpr.c </b>fungerar likadant fast den läser in en sprite och två paletter, 
+<b>Passtga </b>lÃ¤ser en 256-fÃ¤rgers tga bild och en palett och sparar rÃ¥data, 
+samma som spritarna. HÃ¶jden, bredden och sedan data pixel fÃ¶r pixel. 
+<b>Passpr.c </b>fungerar likadant fast den lÃ¤ser in en sprite och tvÃ¥ paletter, 
 eftersom en sprites palett ligger lagrad som en separat fil. 
 <p>
-Passtga och Passpr använder jag själv och de är inte särskilt användarvänliga. 
-Man måste gå in i main och skriva in namnen på filerna man vill manipulera. 
-Det syns ganska tydligt var man ska ändra, det är överst i main.
-Passtga och passpr är inte särskilt välskrivna heller. De är ett typiskt resultat
-av hackande. Jag satte mig vid datorn och började planlöst hacka tills jag
-fick fram nåt som funkade vilket resulterade i ett fungerande med oerhört 
-virrigt program. Jag orkar inte gå igenom det och fixa till det eftersom det
+Passtga och Passpr anvÃ¤nder jag sjÃ¤lv och de Ã¤r inte sÃ¤rskilt anvÃ¤ndarvÃ¤nliga. 
+Man mÃ¥ste gÃ¥ in i main och skriva in namnen pÃ¥ filerna man vill manipulera. 
+Det syns ganska tydligt var man ska Ã¤ndra, det Ã¤r Ã¶verst i main.
+Passtga och passpr Ã¤r inte sÃ¤rskilt vÃ¤lskrivna heller. De Ã¤r ett typiskt resultat
+av hackande. Jag satte mig vid datorn och bÃ¶rjade planlÃ¶st hacka tills jag
+fick fram nÃ¥t som funkade vilket resulterade i ett fungerande med oerhÃ¶rt 
+virrigt program. Jag orkar inte gÃ¥ igenom det och fixa till det eftersom det
 ju trots allt fungerar i alla fall.<br>
-Se filen <a href="targa.txt">targa.txt</a> för en tydligare beskrivning av targaformatet.
+Se filen <a href="targa.txt">targa.txt</a> fÃ¶r en tydligare beskrivning av targaformatet.
 <p>
 
 <h3>ATT KOMBINERA C OCH ASSEMBLER</h3>
 <p>
-Spritefunktionerna är alltså skrivna i assembler men huvudprogrammet är skrivet
-i C, hur går det till?<br>
-Tänk först på hur det går till när man kompilerar ett vanligt c-program.
-Om man använder t ex Borland C trycker man bara på Ctrl F9 och så sker allt
-automatiskt. Men vad kompilatorn gör är faktiskt att först kompilera c-koden 
-till en objektfil med ändelsen .obj. Sedan länkas objektkoden till en körbar
-.exe fil. Om man assemblerar en .asm fil med t ex tasm så blir resultatet en
-.obj fil. Sedan länkar man .obj filen med tlink till en .exe fil.
+Spritefunktionerna Ã¤r alltsÃ¥ skrivna i assembler men huvudprogrammet Ã¤r skrivet
+i C, hur gÃ¥r det till?<br>
+TÃ¤nk fÃ¶rst pÃ¥ hur det gÃ¥r till nÃ¤r man kompilerar ett vanligt c-program.
+Om man anvÃ¤nder t ex Borland C trycker man bara pÃ¥ Ctrl F9 och sÃ¥ sker allt
+automatiskt. Men vad kompilatorn gÃ¶r Ã¤r faktiskt att fÃ¶rst kompilera c-koden 
+till en objektfil med Ã¤ndelsen .obj. Sedan lÃ¤nkas objektkoden till en kÃ¶rbar
+.exe fil. Om man assemblerar en .asm fil med t ex tasm sÃ¥ blir resultatet en
+.obj fil. Sedan lÃ¤nkar man .obj filen med tlink till en .exe fil.
 <p>
-För att kombinera en fil som är skriven i assembler och en som är skriven i C 
-så assemblerar man assemblerfilen till en .obj fil och man kompilerar C-filen 
-till en .obj fil. Till sist länkar man ihop assemblerfilens .obj fil och 
+FÃ¶r att kombinera en fil som Ã¤r skriven i assembler och en som Ã¤r skriven i C 
+sÃ¥ assemblerar man assemblerfilen till en .obj fil och man kompilerar C-filen 
+till en .obj fil. Till sist lÃ¤nkar man ihop assemblerfilens .obj fil och 
 C-filens .obj fil till en gemensam .exe fil.
 <p>
 
-En funktion som är skriven i assembler anropas precis likadant som en funktion 
-som är skriven i C. Överst i C programmet talar man om vilka funktioner som är 
-skrivna utanför C programmet med C kommandot extern.
+En funktion som Ã¤r skriven i assembler anropas precis likadant som en funktion 
+som Ã¤r skriven i C. Ã–verst i C programmet talar man om vilka funktioner som Ã¤r 
+skrivna utanfÃ¶r C programmet med C kommandot extern.
 <p>
-<b>Ex</b>, antag att wtsync() är skriven i assembler i en annan fil.
-Då blir C-programmet så här:
+<b>Ex</b>, antag att wtsync() Ã¤r skriven i assembler i en annan fil.
+DÃ¥ blir C-programmet sÃ¥ hÃ¤r:
 <pre>
-#include <stdio.h>              /* ta inte med stdio om det inte behövs */
-                                /* det ökar bara storleken på .exe filen */
+#include <stdio.h>              /* ta inte med stdio om det inte behÃ¶vs */
+                                /* det Ã¶kar bara storleken pÃ¥ .exe filen */
 
-extern void wtsync(void);       /* denna funktion finns nånannanstans */
+extern void wtsync(void);       /* denna funktion finns nÃ¥nannanstans */
 
 void main(void)
 {
@@ -192,16 +192,16 @@ void main(void)
 </pre>
 Och assemblerfilen blir:
 <pre>        
-        P386N                   ;tillåt 386 instruktioner (movsd tex)
-        IDEAL                   ;använd tasm's ideal mode
+        P386N                   ;tillÃ¥t 386 instruktioner (movsd tex)
+        IDEAL                   ;anvÃ¤nd tasm's ideal mode
         MODEL small             ; (data &lt; 64k) och (kod &lt; 64k)
         CODESEG
 
-        PUBLIC  _wtsync         ;denna rutin ska kunna anropas från C
+        PUBLIC  _wtsync         ;denna rutin ska kunna anropas frÃ¥n C
 
 PROC    _wtsync NEAR
 
-        .                       ;här emellan är koden för wtsync
+        .                       ;hÃ¤r emellan Ã¤r koden fÃ¶r wtsync
         .
         .
         
@@ -210,13 +210,13 @@ ENDP    _wtsync
 
         END
 </pre>
-Observera att wtsync börjar med ett _ i assemblerfilen. Detta är standard, 
-man lägger alltid till ett _ före funktionsnamnet när funktionen ska kunna 
-anropas från c.
-Antag att wtsync är skriven i filen testasm.asm och att C-programmet heter 
-testc.c. För att bygga exe-filen kan man gå till väga på olika sätt.
-Jag brukar använd tasm för assemblerfilen och borland C++ 3.1 command line 
-compiler, bcc för c-filen:
+Observera att wtsync bÃ¶rjar med ett _ i assemblerfilen. Detta Ã¤r standard, 
+man lÃ¤gger alltid till ett _ fÃ¶re funktionsnamnet nÃ¤r funktionen ska kunna 
+anropas frÃ¥n c.
+Antag att wtsync Ã¤r skriven i filen testasm.asm och att C-programmet heter 
+testc.c. FÃ¶r att bygga exe-filen kan man gÃ¥ till vÃ¤ga pÃ¥ olika sÃ¤tt.
+Jag brukar anvÃ¤nd tasm fÃ¶r assemblerfilen och borland C++ 3.1 command line 
+compiler, bcc fÃ¶r c-filen:
 <p>
 <pre>
 Med <b>Borland C++</b> skriv:
@@ -229,131 +229,131 @@ Med <b>Turbo C++</b> skriv:
         tcc -c testc.c
         tcc -ms testc.obj testasm.obj
 </pre>
-tasm /ml tillverkar assemblerfilens .obj fil. /ml betyder att tasm ska göra 
-skillnad på stora och små bokstäver (case sensitive på engelska).
+tasm /ml tillverkar assemblerfilens .obj fil. /ml betyder att tasm ska gÃ¶ra 
+skillnad pÃ¥ stora och smÃ¥ bokstÃ¤ver (case sensitive pÃ¥ engelska).
 <p>
 bcc -c tillverkar C-filens .obj fil. -c betyder endast kompilering, ingen
-länkning.
+lÃ¤nkning.
 <p>
-bcc -ms länkar objektfilerna till en körbar .exe-fil. -ms betyder att kompilatorn
-ska använda minnesmodell small. 
-Resultatet blir en fil som heter testc.exe eftersom testc.obj stod först vid 
-länkningen.
+bcc -ms lÃ¤nkar objektfilerna till en kÃ¶rbar .exe-fil. -ms betyder att kompilatorn
+ska anvÃ¤nda minnesmodell small. 
+Resultatet blir en fil som heter testc.exe eftersom testc.obj stod fÃ¶rst vid 
+lÃ¤nkningen.
 <p>
-Svårare än så är det inte. Det finns en himla massa fördelar med att skriva
-vissa funktioner i ren assembler och länka ihop dem med C-programmet.
-Bland annat så kan man i Borland C++ 3.1 inte använda sig av 386-instruktioner
-som t ex movsd, men det går utmärkt att använda 386-instruktioner i ren assembler.
-Dessutom blir C programmet mycket mindre och mer läsbart om man delar upp programmet
-i flera mindre filer, det minskar dessutom risken för fel och det blir lättare att
-isolera fel när man debuggar.
-Svårigheten är att skriva assemblerfunktionerna, jag har lärt mig det mesta jag
-kan genom att läsa den utmärkta boken Mastering Turbo Assembler av Tom Swan nu
+SvÃ¥rare Ã¤n sÃ¥ Ã¤r det inte. Det finns en himla massa fÃ¶rdelar med att skriva
+vissa funktioner i ren assembler och lÃ¤nka ihop dem med C-programmet.
+Bland annat sÃ¥ kan man i Borland C++ 3.1 inte anvÃ¤nda sig av 386-instruktioner
+som t ex movsd, men det gÃ¥r utmÃ¤rkt att anvÃ¤nda 386-instruktioner i ren assembler.
+Dessutom blir C programmet mycket mindre och mer lÃ¤sbart om man delar upp programmet
+i flera mindre filer, det minskar dessutom risken fÃ¶r fel och det blir lÃ¤ttare att
+isolera fel nÃ¤r man debuggar.
+SvÃ¥righeten Ã¤r att skriva assemblerfunktionerna, jag har lÃ¤rt mig det mesta jag
+kan genom att lÃ¤sa den utmÃ¤rkta boken Mastering Turbo Assembler av Tom Swan nu
 i sommar.
 <p>
-Några saker att tänka på:
+NÃ¥gra saker att tÃ¤nka pÃ¥:
 <p>                                
-<b>* Skicka argument från c till assembler:</b>
-        Använd ARG direktivet se d3asm.asm för exempel.
-        Här är skalet för en rutin som tar argument:
+<b>* Skicka argument frÃ¥n c till assembler:</b>
+        AnvÃ¤nd ARG direktivet se d3asm.asm fÃ¶r exempel.
+        HÃ¤r Ã¤r skalet fÃ¶r en rutin som tar argument:
 <pre>
-                ARG     xpos:word, . . .        ;skriv alla argument här
-                push    bp              ;detta har med stacken att göra
+                ARG     xpos:word, . . .        ;skriv alla argument hÃ¤r
+                push    bp              ;detta har med stacken att gÃ¶ra
                 mov     bp,sp           ;bry dig inte om det, skriv bara dit
-                .                       ;push bp och mov bp,sp först i rutinen
+                .                       ;push bp och mov bp,sp fÃ¶rst i rutinen
                 .                       ;och pop bp sist i rutinen
-                .                       ;om du använder argument
+                .                       ;om du anvÃ¤nder argument
                 .
-                mov     ax,[xpos]       ;använd argumentet
+                mov     ax,[xpos]       ;anvÃ¤nd argumentet
                 .
                 .
                 .
                 pop     bp
                 ret
 </pre>
-<b>* Att skicka tillbaka returvärden från assemblerrutinen till c-programmet:</b>
+<b>* Att skicka tillbaka returvÃ¤rden frÃ¥n assemblerrutinen till c-programmet:</b>
 <pre>
-        Returvärden skickas i ax och dx beroende på storlek
+        ReturvÃ¤rden skickas i ax och dx beroende pÃ¥ storlek
 
-                Storlek         returregister   Exempel på datatyp
+                Storlek         returregister   Exempel pÃ¥ datatyp
                 Byte            al              char
                 Word (2 byte)   ax              int
                 Dword (4 byte)  dx:ax           char far*
 </pre>
 <p>
-<b>* Spara alltid undan ds, si och di på stacken om du ändrar dessa i rutinen 
+<b>* Spara alltid undan ds, si och di pÃ¥ stacken om du Ã¤ndrar dessa i rutinen 
 </b>
-annars är sannolikheten stor att programmet hänger sig eftersom C-programmet
-annvänder sig av ds, si och di. Ax, bx, cx, dx och es kan man ändra fritt på,
-det spelar ingen roll för c-programmet.
+annars Ã¤r sannolikheten stor att programmet hÃ¤nger sig eftersom C-programmet
+annvÃ¤nder sig av ds, si och di. Ax, bx, cx, dx och es kan man Ã¤ndra fritt pÃ¥,
+det spelar ingen roll fÃ¶r c-programmet.
 <p>
-<b>* undvik lokala variabler</b>, använd register i så stor utsträckning som möjligt.
-Register är många gånger snabbare än lokala variabler.
-Om du måste använda lokala variabler använd assemblerdirektivet LOCAL.
-LOCAL fungerar ungefär som ARG.
+<b>* undvik lokala variabler</b>, anvÃ¤nd register i sÃ¥ stor utstrÃ¤ckning som mÃ¶jligt.
+Register Ã¤r mÃ¥nga gÃ¥nger snabbare Ã¤n lokala variabler.
+Om du mÃ¥ste anvÃ¤nda lokala variabler anvÃ¤nd assemblerdirektivet LOCAL.
+LOCAL fungerar ungefÃ¤r som ARG.
 <p>
-Jag har börjat använda ideal mode på senaste tiden. Det är tasm's egen dialekt
-av pc assembler. Ideal mode innehåller några förenklingar som gör koden 
-enklare att förstå. Skillnaderna är ganska små, t ex skriver man codeseg 
-istället för .code och lite andra småsaker. 
-Ute på internet är ideal mode ganska stort, åtminstone när det gäller 
-demokodning, dessutom använder sig Tom Swan av ideal mode i  Mastering Turbo 
+Jag har bÃ¶rjat anvÃ¤nda ideal mode pÃ¥ senaste tiden. Det Ã¤r tasm's egen dialekt
+av pc assembler. Ideal mode innehÃ¥ller nÃ¥gra fÃ¶renklingar som gÃ¶r koden 
+enklare att fÃ¶rstÃ¥. Skillnaderna Ã¤r ganska smÃ¥, t ex skriver man codeseg 
+istÃ¤llet fÃ¶r .code och lite andra smÃ¥saker. 
+Ute pÃ¥ internet Ã¤r ideal mode ganska stort, Ã¥tminstone nÃ¤r det gÃ¤ller 
+demokodning, dessutom anvÃ¤nder sig Tom Swan av ideal mode i  Mastering Turbo 
 Assembler.
 <p>
 
 <h3>EXEMPELPROGRAMMET DEMO3.C</h3>
 <p>
-Alla funktioner som demo3 använder sig av är skrivna i assembler i filen
-d3asm.asm. C-programmet är ganska självförklarande, det är dock några av
-funktionerna som kan behöva lite närmare förklaring. Showpic läser in en bild, 
-som är lagrad som rådata, till skärmen eller en virtuell skärm. 
-Jag tillverkade bilden med hjälp av passtga.c. Programmet använder sig av en
-virtuell skärm som är lika stor som den riktiga skärmen (64000 bytes).
-Först allokeras minne till skärmen mha malloc (som finns i d3asm.asm).
-Om det gick bra laddas en bild in till den virtuella skärmen och en paletten
-laddas från hårddisken och sätts. Sedan flippas bilden över från den virtuella
-skärmen till den fysiska skärmen med en dissolve effekt. Dissolve effekten 
-använder sig av en ganska intressant algoritm som ger alla tal från 1 - FFFFh
-i en slumpmässig ordning, inget tal kommer mer än en gång.<br>
+Alla funktioner som demo3 anvÃ¤nder sig av Ã¤r skrivna i assembler i filen
+d3asm.asm. C-programmet Ã¤r ganska sjÃ¤lvfÃ¶rklarande, det Ã¤r dock nÃ¥gra av
+funktionerna som kan behÃ¶va lite nÃ¤rmare fÃ¶rklaring. Showpic lÃ¤ser in en bild, 
+som Ã¤r lagrad som rÃ¥data, till skÃ¤rmen eller en virtuell skÃ¤rm. 
+Jag tillverkade bilden med hjÃ¤lp av passtga.c. Programmet anvÃ¤nder sig av en
+virtuell skÃ¤rm som Ã¤r lika stor som den riktiga skÃ¤rmen (64000 bytes).
+FÃ¶rst allokeras minne till skÃ¤rmen mha malloc (som finns i d3asm.asm).
+Om det gick bra laddas en bild in till den virtuella skÃ¤rmen och en paletten
+laddas frÃ¥n hÃ¥rddisken och sÃ¤tts. Sedan flippas bilden Ã¶ver frÃ¥n den virtuella
+skÃ¤rmen till den fysiska skÃ¤rmen med en dissolve effekt. Dissolve effekten 
+anvÃ¤nder sig av en ganska intressant algoritm som ger alla tal frÃ¥n 1 - FFFFh
+i en slumpmÃ¤ssig ordning, inget tal kommer mer Ã¤n en gÃ¥ng.<br>
 <b>PSEUDOKOD:</b>
 <pre>        
-        sätt offset till ett tal skilt från noll (t ex 1)
+        sÃ¤tt offset till ett tal skilt frÃ¥n noll (t ex 1)
         for(i=0;i&lt;0x0FFFF;i++)
         {
-                gör något nyttigt med offseten
+                gÃ¶r nÃ¥got nyttigt med offseten
                 .
                 .
                 .
-                shifta offseten en bit åt höger (som att dela med 2)
+                shifta offseten en bit Ã¥t hÃ¶ger (som att dela med 2)
                 om den utshiftade biten var en etta
-                sätt offset till offset xor 0x0b400
+                sÃ¤tt offset till offset xor 0x0b400
           }
 </pre>
-på detta sätt kommer offset att anta alla värden mellan 1 - ffffh.
-Fråga mig inte hur det går till men det fungerar faktiskt. Jag fick idén
-från Graphic Gems I sid 221.
+pÃ¥ detta sÃ¤tt kommer offset att anta alla vÃ¤rden mellan 1 - ffffh.
+FrÃ¥ga mig inte hur det gÃ¥r till men det fungerar faktiskt. Jag fick idÃ©n
+frÃ¥n Graphic Gems I sid 221.
 <p>
-Efter dissolve effekten kommer huvudloopen där en genomskinlig sprite studsar
-över skärmen. Allt ritande och klippande sker i den virtuella skärmen. När
-ritandet är klart flippas den virtuella skärmen över till den fysiska skärmen
-och nästa bild börjar ritas. Huvudloopen gör följande:
+Efter dissolve effekten kommer huvudloopen dÃ¤r en genomskinlig sprite studsar
+Ã¶ver skÃ¤rmen. Allt ritande och klippande sker i den virtuella skÃ¤rmen. NÃ¤r
+ritandet Ã¤r klart flippas den virtuella skÃ¤rmen Ã¶ver till den fysiska skÃ¤rmen
+och nÃ¤sta bild bÃ¶rjar ritas. Huvudloopen gÃ¶r fÃ¶ljande:
 <pre>        
-        1.      Klipp ut bakrunden där spriten ska ritas ut
+        1.      Klipp ut bakrunden dÃ¤r spriten ska ritas ut
         2.      Rita ut spriten
-        3.      Flippa över virt till den fysiska skärmen
-        4.      sudda genom att rita tillbaka bakgrunden över spriten
-        5.      räkna ut nya koordinater för spriten och hoppa till 1
+        3.      Flippa Ã¶ver virt till den fysiska skÃ¤rmen
+        4.      sudda genom att rita tillbaka bakgrunden Ã¶ver spriten
+        5.      rÃ¤kna ut nya koordinater fÃ¶r spriten och hoppa till 1
 </pre>
-Innan programmet avslutas måste man lämna tillbaka det allokerade minnesutrymmet
-med hjälp av funktionen free (som också finns i d3asm.asm)
+Innan programmet avslutas mÃ¥ste man lÃ¤mna tillbaka det allokerade minnesutrymmet
+med hjÃ¤lp av funktionen free (som ocksÃ¥ finns i d3asm.asm)
 <p>
-Se filen <a href="targa.txt">targa.txt</a>för beskrivning av targaformatet. <p>
-Nästa del kommer att handla om 2d och 3d vektorgrafik. Jag håller på att 
-översätta rutinerna från c till assembler och det tar sin lilla tid. Men ni
-kommer att få rutinerna serverade på fat, färdiga att använda och göra egna 
-3d-demos med. Den klurigaste rutinen är den som ritar ut en fylld triangel.
-Jag funderar över vilket sätt som är det absolut snabbaste att rita ut en fylld
-triangel. Om någon vet så hör gärna av er till mig.
+Se filen <a href="targa.txt">targa.txt</a>fÃ¶r beskrivning av targaformatet. <p>
+NÃ¤sta del kommer att handla om 2d och 3d vektorgrafik. Jag hÃ¥ller pÃ¥ att 
+Ã¶versÃ¤tta rutinerna frÃ¥n c till assembler och det tar sin lilla tid. Men ni
+kommer att fÃ¥ rutinerna serverade pÃ¥ fat, fÃ¤rdiga att anvÃ¤nda och gÃ¶ra egna 
+3d-demos med. Den klurigaste rutinen Ã¤r den som ritar ut en fylld triangel.
+Jag funderar Ã¶ver vilket sÃ¤tt som Ã¤r det absolut snabbaste att rita ut en fylld
+triangel. Om nÃ¥gon vet sÃ¥ hÃ¶r gÃ¤rna av er till mig.
 <p>
 Ladda hem demoskolan <a href="demo3.zip">del3</a> <p>
 Ta det lugnt med spriten

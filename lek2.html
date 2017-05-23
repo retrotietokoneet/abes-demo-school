@@ -3,294 +3,294 @@
 <title>'yet another text tutor'</title>
 </head>
 <body>
-<h2>Välkomna kamrater!</h2>
-<h4>Lektion 2, skärmminnet</h4>
-Detta är del 2 i Albert's assemblerskola för PC. Den här gången tänkte jag
-berätta om hur man skriver text direkt i skärmminnet istället för via int 21h
+<h2>VÃ¤lkomna kamrater!</h2>
+<h4>Lektion 2, skÃ¤rmminnet</h4>
+Detta Ã¤r del 2 i Albert's assemblerskola fÃ¶r PC. Den hÃ¤r gÃ¥ngen tÃ¤nkte jag
+berÃ¤tta om hur man skriver text direkt i skÃ¤rmminnet istÃ¤llet fÃ¶r via int 21h
 (se del 1).
 <p>
-Skärmen i textläge 3 (det grafikläge som datorn har när den startas upp)
-startar på adress 0B800 hex. Varje tecken på skärmen motsvaras då av två bytes
-i skärmminnet, en byte för tecknet och en byte för tecknets attribut 
-(bakgrunds- och förgrunds-färg). Skärmen har 25 rader och det går 80 tecken
-på varje rad, det ger 80*2 = 160 bytes per rad. Sammanlagt tar en skärmsida 
+SkÃ¤rmen i textlÃ¤ge 3 (det grafiklÃ¤ge som datorn har nÃ¤r den startas upp)
+startar pÃ¥ adress 0B800 hex. Varje tecken pÃ¥ skÃ¤rmen motsvaras dÃ¥ av tvÃ¥ bytes
+i skÃ¤rmminnet, en byte fÃ¶r tecknet och en byte fÃ¶r tecknets attribut 
+(bakgrunds- och fÃ¶rgrunds-fÃ¤rg). SkÃ¤rmen har 25 rader och det gÃ¥r 80 tecken
+pÃ¥ varje rad, det ger 80*2 = 160 bytes per rad. Sammanlagt tar en skÃ¤rmsida 
 160*25 = 4000 bytes.
 <p>
-För att skriva på skärmen behöver man bara ändra i skärmminnet. Detta görs genom
-att först ladda startaddressen till skärmen i ett segmentregister:
+FÃ¶r att skriva pÃ¥ skÃ¤rmen behÃ¶ver man bara Ã¤ndra i skÃ¤rmminnet. Detta gÃ¶rs genom
+att fÃ¶rst ladda startaddressen till skÃ¤rmen i ett segmentregister:
 <pre>        
-        mov     ax,0B800h       ;det går inte att göra mov direkt till seg.reg.
-        mov     es,ax           ;utan man måste gå via t ex ax
+        mov     ax,0B800h       ;det gÃ¥r inte att gÃ¶ra mov direkt till seg.reg.
+        mov     es,ax           ;utan man mÃ¥ste gÃ¥ via t ex ax
 </pre>
 
-Es är ett lämpligt segmentregister som brukar användas när man vill skriva
-saker till minnet (när man vill läsa ur minnet brukar ds användas).
+Es Ã¤r ett lÃ¤mpligt segmentregister som brukar anvÃ¤ndas nÃ¤r man vill skriva
+saker till minnet (nÃ¤r man vill lÃ¤sa ur minnet brukar ds anvÃ¤ndas).
 <p>
-Sedan måste en offset laddas till ett offsetregister, t ex di (destinationsindex).
-Det går även bra med bx, dx eller si, men di har en speciell fördel som jag 
-kommer till senare. Offseten beräknas enligt:
+Sedan mÃ¥ste en offset laddas till ett offsetregister, t ex di (destinationsindex).
+Det gÃ¥r Ã¤ven bra med bx, dx eller si, men di har en speciell fÃ¶rdel som jag 
+kommer till senare. Offseten berÃ¤knas enligt:
 <p>
 Offset = Ypos * 160 + Xpos * 2
 <p>
-där Xpos är tecknets X-koordinat och Y-pos är tecknets Y-koordinat. Formeln
-bygger på det faktum att det går 160 bytes / rad och varje tecken tar 2 bytes.
+dÃ¤r Xpos Ã¤r tecknets X-koordinat och Y-pos Ã¤r tecknets Y-koordinat. Formeln
+bygger pÃ¥ det faktum att det gÃ¥r 160 bytes / rad och varje tecken tar 2 bytes.
 X-pos kan vara i intervallet 0 - 79, Ypos 0 - 24. Bytarna ligger konsekutivt
-(följande efter varandra) med först en tecken-byte sedan en attribut-byte.
+(fÃ¶ljande efter varandra) med fÃ¶rst en tecken-byte sedan en attribut-byte.
 <pre>
 Koordinat  Offset     tecken  Attribut          Position
-(0,0)      0*160 + 0*2 = 0       1              övre vänstra hörnet
-(1,0)      0*160 + 1*2 = 2       3              tecken nr 2 på översta raden
-(0,1)      1*160 + 0*2 = 160     161            Första tecknet på andra raden
-(4,10)    10*160 + 4*2 = 1608    1609           4:de tecknet på 10:de raden
-(79,24)   10*160 + 4*2 = 3998    3999           sista tecknet på sista raden
+(0,0)      0*160 + 0*2 = 0       1              Ã¶vre vÃ¤nstra hÃ¶rnet
+(1,0)      0*160 + 1*2 = 2       3              tecken nr 2 pÃ¥ Ã¶versta raden
+(0,1)      1*160 + 0*2 = 160     161            FÃ¶rsta tecknet pÃ¥ andra raden
+(4,10)    10*160 + 4*2 = 1608    1609           4:de tecknet pÃ¥ 10:de raden
+(79,24)   10*160 + 4*2 = 3998    3999           sista tecknet pÃ¥ sista raden
 </pre>
-Varje tecken består som sagt av två bytes, den första innehåller helt enkelt
-ascii-värdet för tecknet som visas och den andra byten innehåller attributen.
-Attribut-byten består av fyra bitar för bakgrundsfärgen och fyra bitar för
-förgrundsfärgen.
+Varje tecken bestÃ¥r som sagt av tvÃ¥ bytes, den fÃ¶rsta innehÃ¥ller helt enkelt
+ascii-vÃ¤rdet fÃ¶r tecknet som visas och den andra byten innehÃ¥ller attributen.
+Attribut-byten bestÃ¥r av fyra bitar fÃ¶r bakgrundsfÃ¤rgen och fyra bitar fÃ¶r
+fÃ¶rgrundsfÃ¤rgen.
 <p>
 <pre>
-Färgerna i grafikmod 3 (text-läge)
-Svart   0       Färg 0 - 7 kan användas till både
-Blått   1       Bakgrunds- och förgrunds-färg
-Grönt   2
-Cyan    3       Attributbyten beräknas enligt:
-Rött    4       ( 16*bakgrundsfärg + textfärg )
+FÃ¤rgerna i grafikmod 3 (text-lÃ¤ge)
+Svart   0       FÃ¤rg 0 - 7 kan anvÃ¤ndas till bÃ¥de
+BlÃ¥tt   1       Bakgrunds- och fÃ¶rgrunds-fÃ¤rg
+GrÃ¶nt   2
+Cyan    3       Attributbyten berÃ¤knas enligt:
+RÃ¶tt    4       ( 16*bakgrundsfÃ¤rg + textfÃ¤rg )
 Violett 5
-Brunt   6       Ex:  16*4 + 7 = 71 =&gt; Vit text på röd bakgrund
+Brunt   6       Ex:  16*4 + 7 = 71 =&gt; Vit text pÃ¥ rÃ¶d bakgrund
 Vitt    7
 
-I Grått 8       I = Intensivt
-I Blått 9
-I Grönt 10      Färg 8 - 15 kan endast användast till textfärg (förgrund)
+I GrÃ¥tt 8       I = Intensivt
+I BlÃ¥tt 9
+I GrÃ¶nt 10      FÃ¤rg 8 - 15 kan endast anvÃ¤ndast till textfÃ¤rg (fÃ¶rgrund)
 I Cyan  11
-I Rött  12      För blinkande text sätt översta biten till 1 
+I RÃ¶tt  12      FÃ¶r blinkande text sÃ¤tt Ã¶versta biten till 1 
 I Lila  13      ( t ex genom att addera 128 till attributet)
 I Brunt 14      
-I Vitt  15      16*1 + 4 + 128 = 148 =&gt; blinkande röd text på blå bakgrund
+I Vitt  15      16*1 + 4 + 128 = 148 =&gt; blinkande rÃ¶d text pÃ¥ blÃ¥ bakgrund
 
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 
-;Kort exempelprogram som skriver ett A på skärmen med gräsligt attribut
+;Kort exempelprogram som skriver ett A pÃ¥ skÃ¤rmen med grÃ¤sligt attribut
 
-DOSSEG                  ;Dela upp minnet i segment precis som dos gör
-.MODEL SMALL            ;välj vilken minnesmodell programmet ska ha
-.STACK 100h             ;definiera en stack på 256 bytes (100 hex)
+DOSSEG                  ;Dela upp minnet i segment precis som dos gÃ¶r
+.MODEL SMALL            ;vÃ¤lj vilken minnesmodell programmet ska ha
+.STACK 100h             ;definiera en stack pÃ¥ 256 bytes (100 hex)
 
-.DATA                   ;datasegmentet tomt i det här programmet
+.DATA                   ;datasegmentet tomt i det hÃ¤r programmet
 .CODE                   ;kod segment
 
-START:                  ;start är en label
+START:                  ;start Ã¤r en label
         
-        mov     ax,0B800h       ;startadressen för skärmminnet till ax
-        mov     es,ax           ;lägg startadressen i es
+        mov     ax,0B800h       ;startadressen fÃ¶r skÃ¤rmminnet till ax
+        mov     es,ax           ;lÃ¤gg startadressen i es
         
-        mov     di, 160*12+39*2 ;offset för rad 12, tecken 39 till di
+        mov     di, 160*12+39*2 ;offset fÃ¶r rad 12, tecken 39 till di
         
-        mov     al, 65          ;65 = ascii för tecknet A
-        mov     es:[di],al      ;skriv tecknet till skärmminnet
-        inc     di              ;öka di till attributbyten
-        mov     al, 16*2+4+128  ;Attribut = blinkande rött på grön bakgr.
-        mov     es:[di],al      ;skriv attributet till skärmminnet
+        mov     al, 65          ;65 = ascii fÃ¶r tecknet A
+        mov     es:[di],al      ;skriv tecknet till skÃ¤rmminnet
+        inc     di              ;Ã¶ka di till attributbyten
+        mov     al, 16*2+4+128  ;Attribut = blinkande rÃ¶tt pÃ¥ grÃ¶n bakgr.
+        mov     es:[di],al      ;skriv attributet till skÃ¤rmminnet
         
         mov     ax,4c00h        ;hoppa tillbaka till dos
         int     21h             ;programmet krashar utan dessa 2 rader!
 
-END START               ;SLUT (tala om att koden börjar vid labeln start)
+END START               ;SLUT (tala om att koden bÃ¶rjar vid labeln start)
 
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 </pre>
-En optimering av koden vore att skriva både tecknet och attributet samtidigt
-till skärmen. Det kan man göra genom att lägga tecknet i al och attributet
-i ah och sen skriva hela ax till skärmen.
+En optimering av koden vore att skriva bÃ¥de tecknet och attributet samtidigt
+till skÃ¤rmen. Det kan man gÃ¶ra genom att lÃ¤gga tecknet i al och attributet
+i ah och sen skriva hela ax till skÃ¤rmen.
 <pre>
-        mov     al,65           ;Lägg tecknet 'A' i al
-        mov     ah,16*2+4+128   ;lägg attributet 'blinkande rött på grönt'i ah
-        mov     es:[di],ax      ;flytta hela ax till es:[di] (skärmminnet)
+        mov     al,65           ;LÃ¤gg tecknet 'A' i al
+        mov     ah,16*2+4+128   ;lÃ¤gg attributet 'blinkande rÃ¶tt pÃ¥ grÃ¶nt'i ah
+        mov     es:[di],ax      ;flytta hela ax till es:[di] (skÃ¤rmminnet)
 </pre>
-En annan optimering är att använda instruktionen stos. Stosb tar en byte i
+En annan optimering Ã¤r att anvÃ¤nda instruktionen stos. Stosb tar en byte i
 Al och skriver den till adressen som pekas ut av es:[di]. Precis vad som 
-behövs i det här programmet. Genom att skriva stosw flyttar man ett helt word
-från Ax till es:[di] och stosd flyttar ett helt doubleword (endast 386 och 
-högre) från Eax till es:[di]. 386 specifika instruktioner hör till överkursen
-men jag kommer kanske gå igenom några i en framtida del av assemblerskolan.
+behÃ¶vs i det hÃ¤r programmet. Genom att skriva stosw flyttar man ett helt word
+frÃ¥n Ax till es:[di] och stosd flyttar ett helt doubleword (endast 386 och 
+hÃ¶gre) frÃ¥n Eax till es:[di]. 386 specifika instruktioner hÃ¶r till Ã¶verkursen
+men jag kommer kanske gÃ¥ igenom nÃ¥gra i en framtida del av assemblerskolan.
 <pre>
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 
-;Optimerat program som skriver blinkande rött 'A' på grön bakgrund
-;på rad 12, tecken 39 (39,12).
+;Optimerat program som skriver blinkande rÃ¶tt 'A' pÃ¥ grÃ¶n bakgrund
+;pÃ¥ rad 12, tecken 39 (39,12).
 
-DOSSEG                  ;Dela upp minnet i segment precis som dos gör
-.MODEL SMALL            ;välj vilken minnesmodell programmet ska ha
-.STACK 100h             ;definiera en stack på 256 bytes (100 hex)
+DOSSEG                  ;Dela upp minnet i segment precis som dos gÃ¶r
+.MODEL SMALL            ;vÃ¤lj vilken minnesmodell programmet ska ha
+.STACK 100h             ;definiera en stack pÃ¥ 256 bytes (100 hex)
 
-.DATA                   ;datasegmentet tomt i det här programmet
+.DATA                   ;datasegmentet tomt i det hÃ¤r programmet
 .CODE                   ;kod segment
 
-START:                  ;start är en label
+START:                  ;start Ã¤r en label
         
-        mov     ax,0B800h       ;startadressen för skärmminnet till ax
-        mov     es,ax           ;lägg startadressen i es
+        mov     ax,0B800h       ;startadressen fÃ¶r skÃ¤rmminnet till ax
+        mov     es,ax           ;lÃ¤gg startadressen i es
         
-        mov     di, 160*12+39*2 ;offset för rad 12, tecken 39 till di
+        mov     di, 160*12+39*2 ;offset fÃ¶r rad 12, tecken 39 till di
         
-        mov     al, 65          ;65 = ascii för tecknet 'A' i al
-        mov     ah, 16*2+4+128  ;Attribut = blinkande rött på grön bakgr i ah.
-        stosw                   ;skriv ax till skärmminnet
+        mov     al, 65          ;65 = ascii fÃ¶r tecknet 'A' i al
+        mov     ah, 16*2+4+128  ;Attribut = blinkande rÃ¶tt pÃ¥ grÃ¶n bakgr i ah.
+        stosw                   ;skriv ax till skÃ¤rmminnet
         
         mov     ax,4c00h        ;hoppa tillbaka till dos
         int     21h             ;programmet krashar utan dessa 2 rader!
 
-END START               ;SLUT (tala om att koden börjar vid labeln start)
+END START               ;SLUT (tala om att koden bÃ¶rjar vid labeln start)
 
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 </pre>
 
-Stosb flyttar inte bara en byte från al till es:di utan räknar också upp
-di med en byte efter flyttningen. Detta gör att om man skriver stosb tio ggr
-i rad så kopieras al tio ggr till adress es:di och di räknas upp varje gång,
-vilket gör att bytarna hamnar efter varandra i minnet. På samma sätt räknar
+Stosb flyttar inte bara en byte frÃ¥n al till es:di utan rÃ¤knar ocksÃ¥ upp
+di med en byte efter flyttningen. Detta gÃ¶r att om man skriver stosb tio ggr
+i rad sÃ¥ kopieras al tio ggr till adress es:di och di rÃ¤knas upp varje gÃ¥ng,
+vilket gÃ¶r att bytarna hamnar efter varandra i minnet. PÃ¥ samma sÃ¤tt rÃ¤knar
 stosw upp di 2 bytes efter flyttningen. Detta kan man utnyttja t ex till att
-fylla skärmen med ett och samma tecken.
+fylla skÃ¤rmen med ett och samma tecken.
 <pre>
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 
-;program som fyller skärmen med blåa 'A' på röd bakgrund.
+;program som fyller skÃ¤rmen med blÃ¥a 'A' pÃ¥ rÃ¶d bakgrund.
 
-DOSSEG                  ;Dela upp minnet i segment precis som dos gör
-.MODEL SMALL            ;välj vilken minnesmodell programmet ska ha
-.STACK 100h             ;definiera en stack på 256 bytes (100 hex)
+DOSSEG                  ;Dela upp minnet i segment precis som dos gÃ¶r
+.MODEL SMALL            ;vÃ¤lj vilken minnesmodell programmet ska ha
+.STACK 100h             ;definiera en stack pÃ¥ 256 bytes (100 hex)
 
-.DATA                   ;inga data i det här programmet heller
+.DATA                   ;inga data i det hÃ¤r programmet heller
 .CODE                   ;kod segment
 
-START:                  ;start är en label
+START:                  ;start Ã¤r en label
         
-        mov     ax,0B800h       ;startadressen för skärmminnet till ax
-        mov     es,ax           ;lägg startadressen i es
+        mov     ax,0B800h       ;startadressen fÃ¶r skÃ¤rmminnet till ax
+        mov     es,ax           ;lÃ¤gg startadressen i es
         
-        xor     di,di           ;nollställ di (börja vid början av skärmen)
+        xor     di,di           ;nollstÃ¤ll di (bÃ¶rja vid bÃ¶rjan av skÃ¤rmen)
         
-        mov     al, 65          ;65 = ascii för tecknet 'A' till al
-        mov     ah, 16*4+1      ;Attribut = blå text på grön bakgrund till ah.
-        mov     cx,2000         ;25*80 = 2000 tecken på skärmen
-                                ;cx = loopräknare
-loop1:  stosw                   ;skriv ax till skärmminnet och räkna upp di
+        mov     al, 65          ;65 = ascii fÃ¶r tecknet 'A' till al
+        mov     ah, 16*4+1      ;Attribut = blÃ¥ text pÃ¥ grÃ¶n bakgrund till ah.
+        mov     cx,2000         ;25*80 = 2000 tecken pÃ¥ skÃ¤rmen
+                                ;cx = looprÃ¤knare
+loop1:  stosw                   ;skriv ax till skÃ¤rmminnet och rÃ¤kna upp di
         dec     cx              ;minska cx med ett
         jnz     loop1           ;om cx inte noll hoppa till loop1
         
         mov     ax,4c00h        ;hoppa tillbaka till dos
         int     21h             ;programmet krashar utan dessa 2 rader!
 
-END START               ;SLUT (tala om att koden börjar vid labeln start)
+END START               ;SLUT (tala om att koden bÃ¶rjar vid labeln start)
 
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 </pre>
-Programmet innehåller en loop där cx är loopräknare. Cx bestämmer hur många
+Programmet innehÃ¥ller en loop dÃ¤r cx Ã¤r looprÃ¤knare. Cx bestÃ¤mmer hur mÃ¥nga
 varv programmet skall snurra i loopen. Dec Cx minskar Cx med ett.
 <pre>        
         jnz     loop1   ;hoppar till labeln loop1 om resultatet
-                        ;av föregående instruktion skilt från noll
+                        ;av fÃ¶regÃ¥ende instruktion skilt frÃ¥n noll
 </pre>
-jnz = jump if not zero, är ett så kallat villkorligt hopp. Lite noggrannare
-definition: Om zero-flaggan inte är satt, hoppa till labeln som anges.
-zero-flaggan sätts om resultatet av föregående instruktion är noll.
-t ex om cx=1 och man gör ett dec cx =&gt; cx = 0 =&gt; zero-flaggan sätts.
+jnz = jump if not zero, Ã¤r ett sÃ¥ kallat villkorligt hopp. Lite noggrannare
+definition: Om zero-flaggan inte Ã¤r satt, hoppa till labeln som anges.
+zero-flaggan sÃ¤tts om resultatet av fÃ¶regÃ¥ende instruktion Ã¤r noll.
+t ex om cx=1 och man gÃ¶r ett dec cx =&gt; cx = 0 =&gt; zero-flaggan sÃ¤tts.
 <p>
-Cx registret är specialiserat på att agera loopräknare. Därför finns det ett
+Cx registret Ã¤r specialiserat pÃ¥ att agera looprÃ¤knare. DÃ¤rfÃ¶r finns det ett
 par speciella loopinstruktion som involverar cx.
-LOOP instruktionen räknar ned cx med ett och hoppar till labeln om cx &gt; 0.
+LOOP instruktionen rÃ¤knar ned cx med ett och hoppar till labeln om cx &gt; 0.
 <p>
-Föregående program skulle alltså kunna optimeras genom att skriva:
+FÃ¶regÃ¥ende program skulle alltsÃ¥ kunna optimeras genom att skriva:
 <pre>
         mov     cx,2000         ;antalet varv som loopen ska snurra till cx
 loop1:                          ;loop1 en label
-        stosw                   ;detta är vad som utförs i loopen
+        stosw                   ;detta Ã¤r vad som utfÃ¶rs i loopen
         loop    loop1           ;loopa till labeln loop1
 
-loop    loop1 ersätter alltså raderna dec cx och jnz loop1 i programexemplet.
+loop    loop1 ersÃ¤tter alltsÃ¥ raderna dec cx och jnz loop1 i programexemplet.
 </pre>
-Detta går att skriva ännu kompaktare med rep instrutionen. REP repeterar
-efterföljande instruktion CX antal gånger.
+Detta gÃ¥r att skriva Ã¤nnu kompaktare med rep instrutionen. REP repeterar
+efterfÃ¶ljande instruktion CX antal gÃ¥nger.
 <pre>
-        mov     cx,2000         ;lägg 2000 i cx
-        rep     stosw           ;gör stosw 2000 gånger
+        mov     cx,2000         ;lÃ¤gg 2000 i cx
+        rep     stosw           ;gÃ¶r stosw 2000 gÃ¥nger
 </pre>
-Dessa två rader flyttar alltså innehållet i Ax till adressen som pekas ut
-av es:di 2000 ggr och räknar upp di efter varje gång, ganska kompakt eller hur!
+Dessa tvÃ¥ rader flyttar alltsÃ¥ innehÃ¥llet i Ax till adressen som pekas ut
+av es:di 2000 ggr och rÃ¤knar upp di efter varje gÃ¥ng, ganska kompakt eller hur!
 <pre>
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 
-;optimerat program som fyller skärmen med blåa 'A' på röd bakgrund.
-;optimeringen består av att använda rep stosw instruktionen.
+;optimerat program som fyller skÃ¤rmen med blÃ¥a 'A' pÃ¥ rÃ¶d bakgrund.
+;optimeringen bestÃ¥r av att anvÃ¤nda rep stosw instruktionen.
 
-DOSSEG                  ;Dela upp minnet i likandana segment som dos gör
-.MODEL SMALL            ;välj vilken minnesmodell small
-.STACK 100h             ;definiera en stack på 256 bytes (100 hex)
+DOSSEG                  ;Dela upp minnet i likandana segment som dos gÃ¶r
+.MODEL SMALL            ;vÃ¤lj vilken minnesmodell small
+.STACK 100h             ;definiera en stack pÃ¥ 256 bytes (100 hex)
 
-.DATA                   ;inga data i det här programmet
+.DATA                   ;inga data i det hÃ¤r programmet
 .CODE                   ;kod segment
 
-START:                  ;start är en label
+START:                  ;start Ã¤r en label
         
-        mov     ax,0B800h       ;startadressen för skärmminnet (i textläge)
-        mov     es,ax           ;lägg startadressen i es
+        mov     ax,0B800h       ;startadressen fÃ¶r skÃ¤rmminnet (i textlÃ¤ge)
+        mov     es,ax           ;lÃ¤gg startadressen i es
         
-        xor     di,di           ;nollställ di (börja vid början av skärmen)
+        xor     di,di           ;nollstÃ¤ll di (bÃ¶rja vid bÃ¶rjan av skÃ¤rmen)
         
-        mov     al, 65          ;65 = ascii för tecknet 'A' till al
-        mov     ah, 16*4+1      ;Attribut = blå text på röd bakgrund till ah.
-        mov     cx,2000         ;25*80 = 2000 tecken på skärmen
-        rep     stosw           ;skriv ax till skärmminnet och räkna upp di 2000 ggr
+        mov     al, 65          ;65 = ascii fÃ¶r tecknet 'A' till al
+        mov     ah, 16*4+1      ;Attribut = blÃ¥ text pÃ¥ rÃ¶d bakgrund till ah.
+        mov     cx,2000         ;25*80 = 2000 tecken pÃ¥ skÃ¤rmen
+        rep     stosw           ;skriv ax till skÃ¤rmminnet och rÃ¤kna upp di 2000 ggr
 
         mov     ax,4c00h        ;hoppa tillbaka till dos
         int     21h             ;programmet krashar utan dessa 2 rader!
 
-END START               ;SLUT (tala om att koden börjar vid labeln start)
+END START               ;SLUT (tala om att koden bÃ¶rjar vid labeln start)
 
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 </pre>
-Här kommer exakt samma program med inline assembler i c:
+HÃ¤r kommer exakt samma program med inline assembler i c:
 <pre>
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 
-//optimerat program som fyller skärmen med blåa 'A' på röd bakgrund.
+//optimerat program som fyller skÃ¤rmen med blÃ¥a 'A' pÃ¥ rÃ¶d bakgrund.
 
 void main(void)
 {
 asm{        
-        mov     ax,0B800h       //startadressen för skärmminnet (i textläge)
-        mov     es,ax           //lägg startadressen i es
+        mov     ax,0B800h       //startadressen fÃ¶r skÃ¤rmminnet (i textlÃ¤ge)
+        mov     es,ax           //lÃ¤gg startadressen i es
         
-        xor     di,di           //nollställ di (börja vid början av skärmen)
+        xor     di,di           //nollstÃ¤ll di (bÃ¶rja vid bÃ¶rjan av skÃ¤rmen)
         
-        mov     al, 65          //65 = ascii för tecknet 'A' till al
-        mov     ah, 16*4+1      //Attribut = blå text på röd bakgrund till ah.
-        mov     cx,2000         //25*80 = 2000 tecken på skärmen
-        rep     stosw           //skriv ax till skärmminnet och räkna upp di 2000 ggr
+        mov     al, 65          //65 = ascii fÃ¶r tecknet 'A' till al
+        mov     ah, 16*4+1      //Attribut = blÃ¥ text pÃ¥ rÃ¶d bakgrund till ah.
+        mov     cx,2000         //25*80 = 2000 tecken pÃ¥ skÃ¤rmen
+        rep     stosw           //skriv ax till skÃ¤rmminnet och rÃ¤kna upp di 2000 ggr
    }
 }
------------------------------- KLIPP HÄR -------------------------------------
+------------------------------ KLIPP HÃ„R -------------------------------------
 </pre>
-Som ni ser slipper man lite kod i början och slutet av programmet genom att använda
-inline assembler, det är dessutom lättare att hålla reda på saker och ting när man
-börjar skriva längre program. Nackdelen med inline assembler är Bl.a. att exe-filen
-blir MYCKET större än om man använder 'ren' assembler. Dessutom har man större kontroll
-över varenda instruktion när man använder ren assembler. C kan förvränga koden lite
-vid kompileringen. Vilket som går snabbast kan man diskutera. En sak är i alla fall säker, 
-när man programmerar någonting som har med grafik att göra är assembler oumbärligt
-(försök använda Borlands medföljande grafik-bibliotek så får ni se).
+Som ni ser slipper man lite kod i bÃ¶rjan och slutet av programmet genom att anvÃ¤nda
+inline assembler, det Ã¤r dessutom lÃ¤ttare att hÃ¥lla reda pÃ¥ saker och ting nÃ¤r man
+bÃ¶rjar skriva lÃ¤ngre program. Nackdelen med inline assembler Ã¤r Bl.a. att exe-filen
+blir MYCKET stÃ¶rre Ã¤n om man anvÃ¤nder 'ren' assembler. Dessutom har man stÃ¶rre kontroll
+Ã¶ver varenda instruktion nÃ¤r man anvÃ¤nder ren assembler. C kan fÃ¶rvrÃ¤nga koden lite
+vid kompileringen. Vilket som gÃ¥r snabbast kan man diskutera. En sak Ã¤r i alla fall sÃ¤ker, 
+nÃ¤r man programmerar nÃ¥gonting som har med grafik att gÃ¶ra Ã¤r assembler oumbÃ¤rligt
+(fÃ¶rsÃ¶k anvÃ¤nda Borlands medfÃ¶ljande grafik-bibliotek sÃ¥ fÃ¥r ni se).
 
-Prova gärna olika metoder att utföra loopar på som träning.
-Personligen brukar jag använda rep och loop instruktionerna så ofta det går. 
-Kan du t ex rita ut svenska flaggan på skärmen i textläge? Det är en bra övning
-på loopar.
+Prova gÃ¤rna olika metoder att utfÃ¶ra loopar pÃ¥ som trÃ¤ning.
+Personligen brukar jag anvÃ¤nda rep och loop instruktionerna sÃ¥ ofta det gÃ¥r. 
+Kan du t ex rita ut svenska flaggan pÃ¥ skÃ¤rmen i textlÃ¤ge? Det Ã¤r en bra Ã¶vning
+pÃ¥ loopar.
 <p>
-TIPS1: använd blå bakgrund och gul förgrund. ascii för fylld fyrkant=219. (Û)
+TIPS1: anvÃ¤nd blÃ¥ bakgrund och gul fÃ¶rgrund. ascii fÃ¶r fylld fyrkant=219. (Ã›)
 <p>
-TIPS2: Om man vill rensa skärmen kan man fylla den med mellanslag (ascii 32)
-och attributet bakgrund svart (0), förgrund vit (7) vilket är standard
-attributet som används när man slår på datorn.
+TIPS2: Om man vill rensa skÃ¤rmen kan man fylla den med mellanslag (ascii 32)
+och attributet bakgrund svart (0), fÃ¶rgrund vit (7) vilket Ã¤r standard
+attributet som anvÃ¤nds nÃ¤r man slÃ¥r pÃ¥ datorn.
 <p>
 <pre>
 *******************
@@ -307,7 +307,7 @@ attributet som används när man slår på datorn.
 *
 *  s-mail: Albert Veli
 *          Sprisringsg. 9 
-*          724 76  V-S
+*          724 76  V-ÂS
 * </pre>
 <address>
 mail:<a href="mailto:dat94avi@idt.mdh.se">dat94avi@bilbo.mdh.se</a>.

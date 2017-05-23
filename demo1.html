@@ -7,15 +7,15 @@
 <h4>Del 1,mod 13h</h4>
 <hr>
 <p>
-Först och främst vill jag berätta att från och med detta avsnitt byter assemblerskolan namn till demoskolan.Det är dock bra att gå igenom assemblerskolan först eftersom en grundläggande kunskap i assembler förutsätts i demoskolan. I demoskolan kommer jag 
-att gå igenom olika demoeffekter som palettrotation, plasma, 3d-vektorgrafik, fire, sprites osv. de flesta programmen kommer att vara skrivna för grafikläge 13h. Detta ger direkt den första frågan:
-<h3>Vad är läge 13h?</h3>
-Svaret är enkelt. Läge 13h är det grafikläge som de flesta pc-demos och spel är skrivna i (Ja ja, jag vet att det finns demos och spel i svga men jag sa ju de flesta). Skärmen i läge 13h har dimensionerna <h4>320*200</h4>Detta innebär att skärmen är 320 p
-unkter (pixels) bred och 200 punkter hög. Varje punkt kan anta någon utav <h4>256 olika färger.</h4> Som ni vet är 256 exakt det antal värden en byte kan anta. Detta innebär att varje punkt i mod 13h kan representeras av en byte, och det gör dom också. By
-tarna ligger linjärt i minnet precis som i textläge 3. Som ni kanske kommer ihåg startar skärmminnet på segmentadress 08b00h i läge 3, men dock ej i läge 13h. I läge 13h startar skärmminnet på segmentadress:<h4>0A000h.</h4>Denna segmentadress gäller för d
-e flesta grafiklägen inte bara 13h. För att rita ut en punkt på skärmen behövs även en offset. Offseten beräknas enligt:<h4>offset=320*y +x</h4>Där x är x-koordinaten för punkten och y är y-koordinaten för punkten. Observera att (0,0) (= offset 320*0 + 0=
- 0) är längst uppe i vänstra hörnet på skärmen. Sen ökar det från vänster till höger precis som bokstäverna i en bok. När en rad är slut fortsätter man längst till vänster på nästa rad när man läser en bok, så fungerar det här också.<br>
-Så här är skärmen uppbyggd i läge 13h:
+FÃ¶rst och frÃ¤mst vill jag berÃ¤tta att frÃ¥n och med detta avsnitt byter assemblerskolan namn till demoskolan.Det Ã¤r dock bra att gÃ¥ igenom assemblerskolan fÃ¶rst eftersom en grundlÃ¤ggande kunskap i assembler fÃ¶rutsÃ¤tts i demoskolan. I demoskolan kommer jag 
+att gÃ¥ igenom olika demoeffekter som palettrotation, plasma, 3d-vektorgrafik, fire, sprites osv. de flesta programmen kommer att vara skrivna fÃ¶r grafiklÃ¤ge 13h. Detta ger direkt den fÃ¶rsta frÃ¥gan:
+<h3>Vad Ã¤r lÃ¤ge 13h?</h3>
+Svaret Ã¤r enkelt. LÃ¤ge 13h Ã¤r det grafiklÃ¤ge som de flesta pc-demos och spel Ã¤r skrivna i (Ja ja, jag vet att det finns demos och spel i svga men jag sa ju de flesta). SkÃ¤rmen i lÃ¤ge 13h har dimensionerna <h4>320*200</h4>Detta innebÃ¤r att skÃ¤rmen Ã¤r 320 p
+unkter (pixels) bred och 200 punkter hÃ¶g. Varje punkt kan anta nÃ¥gon utav <h4>256 olika fÃ¤rger.</h4> Som ni vet Ã¤r 256 exakt det antal vÃ¤rden en byte kan anta. Detta innebÃ¤r att varje punkt i mod 13h kan representeras av en byte, och det gÃ¶r dom ocksÃ¥. By
+tarna ligger linjÃ¤rt i minnet precis som i textlÃ¤ge 3. Som ni kanske kommer ihÃ¥g startar skÃ¤rmminnet pÃ¥ segmentadress 08b00h i lÃ¤ge 3, men dock ej i lÃ¤ge 13h. I lÃ¤ge 13h startar skÃ¤rmminnet pÃ¥ segmentadress:<h4>0A000h.</h4>Denna segmentadress gÃ¤ller fÃ¶r d
+e flesta grafiklÃ¤gen inte bara 13h. FÃ¶r att rita ut en punkt pÃ¥ skÃ¤rmen behÃ¶vs Ã¤ven en offset. Offseten berÃ¤knas enligt:<h4>offset=320*y +x</h4>DÃ¤r x Ã¤r x-koordinaten fÃ¶r punkten och y Ã¤r y-koordinaten fÃ¶r punkten. Observera att (0,0) (= offset 320*0 + 0=
+ 0) Ã¤r lÃ¤ngst uppe i vÃ¤nstra hÃ¶rnet pÃ¥ skÃ¤rmen. Sen Ã¶kar det frÃ¥n vÃ¤nster till hÃ¶ger precis som bokstÃ¤verna i en bok. NÃ¤r en rad Ã¤r slut fortsÃ¤tter man lÃ¤ngst till vÃ¤nster pÃ¥ nÃ¤sta rad nÃ¤r man lÃ¤ser en bok, sÃ¥ fungerar det hÃ¤r ocksÃ¥.<br>
+SÃ¥ hÃ¤r Ã¤r skÃ¤rmen uppbyggd i lÃ¤ge 13h:
 <pre>
 (0,0)	(1,0)	(2,0)	(3,0)
 0	1	2	3	.	.	.	319 (319,0)
@@ -27,8 +27,8 @@ Så här är skärmen uppbyggd i läge 13h:
 63680	63681	63682	63683	.	.	.	63999 (319,199)
 (0,199)	(1,199)	(2,199)	(3,199)
 </pre>
-Siffrorna inom parenteserna är koordinaterna (x,y) och siffrorna i "tabellen" är offseterna. Prova t ex med (3,2) detta ger enligt formeln offsetten 320*2 + 3 = 643 vilket ju stämmer enligt tabellen. Att rita ut färg 3 vid (3,2) görs alltså genom att flyt
-ta värdet 3 till adressen 0a000h:643.
+Siffrorna inom parenteserna Ã¤r koordinaterna (x,y) och siffrorna i "tabellen" Ã¤r offseterna. Prova t ex med (3,2) detta ger enligt formeln offsetten 320*2 + 3 = 643 vilket ju stÃ¤mmer enligt tabellen. Att rita ut fÃ¤rg 3 vid (3,2) gÃ¶rs alltsÃ¥ genom att flyt
+ta vÃ¤rdet 3 till adressen 0a000h:643.
 <br>o-optimerat exempel i c som finns i optimerad version i koden:
 <pre>
 void putpixel(int x,int y,char color)
@@ -36,26 +36,26 @@ void putpixel(int x,int y,char color)
  int offs;
 
 offs=320*y + x;
-asm{	mov	ax,0a000h	//går ej att flytta värde direkt till es
+asm{	mov	ax,0a000h	//gÃ¥r ej att flytta vÃ¤rde direkt till es
 	mov	es,ax		//segmentadr till es
-	mov	di,offs		//den beräknade offsetten till di
-	mov	al,color	//färgen till al
-	stosb			//flytta en byte från al till es:di
+	mov	di,offs		//den berÃ¤knade offsetten till di
+	mov	al,color	//fÃ¤rgen till al
+	stosb			//flytta en byte frÃ¥n al till es:di
 }
 }
 </pre>
-Detta exempel ritar ut en punkt med färgen color vid (x,y) på skärmen. Exemplet förutsätter att man först befinner sig i läge 13h. Detta görs enklast via interrupt 10h. Fundera inte så mycket på detta nu, skriv bara:
+Detta exempel ritar ut en punkt med fÃ¤rgen color vid (x,y) pÃ¥ skÃ¤rmen. Exemplet fÃ¶rutsÃ¤tter att man fÃ¶rst befinner sig i lÃ¤ge 13h. Detta gÃ¶rs enklast via interrupt 10h. Fundera inte sÃ¥ mycket pÃ¥ detta nu, skriv bara:
 <pre>
-	mov	ax,13h	;flytta numret på grafikläget till ax
-	int	10h	;och utför interrupt 10h
+	mov	ax,13h	;flytta numret pÃ¥ grafiklÃ¤get till ax
+	int	10h	;och utfÃ¶r interrupt 10h
 </pre>
-i början av ditt assemblerprogram. För att växla tillbaka till textläge igen skriv:
+i bÃ¶rjan av ditt assemblerprogram. FÃ¶r att vÃ¤xla tillbaka till textlÃ¤ge igen skriv:
 <pre>
 	mov	ax,3	;vanlig dos-textmod har nummer 3
 	int	10h
 </pre>
-i slutet på assemblerprogrammet.<br>
-I C kan man göra så här:
+i slutet pÃ¥ assemblerprogrammet.<br>
+I C kan man gÃ¶ra sÃ¥ hÃ¤r:
 <pre>
 void setmode(int mode)
 {
@@ -64,95 +64,95 @@ void setmode(int mode)
 }
 }
 </pre>
-I main skriver man sedan setmode(0x0013) för att växla till grafikläge 13h och setmode(3) för att växla tillbaka till texläge 3.
+I main skriver man sedan setmode(0x0013) fÃ¶r att vÃ¤xla till grafiklÃ¤ge 13h och setmode(3) fÃ¶r att vÃ¤xla tillbaka till texlÃ¤ge 3.
 <p>
-Som jag nämnde går det att optimera putpixel-rutinen, detta görs genom att ersätta y*320 med shift och add instruktioner (se koden) som är mycket snabbare, 1 shiftinstruktion tar en klockcykel medan en mul instruktion kan ta ända upp till 219 klockcykler.
- Tips: y*320 = 256*y + 64*y. Att multiplicera med en jämn 2-potens görs snabbast genom att shifta åt vänster (shl).
+Som jag nÃ¤mnde gÃ¥r det att optimera putpixel-rutinen, detta gÃ¶rs genom att ersÃ¤tta y*320 med shift och add instruktioner (se koden) som Ã¤r mycket snabbare, 1 shiftinstruktion tar en klockcykel medan en mul instruktion kan ta Ã¤nda upp till 219 klockcykler.
+ Tips: y*320 = 256*y + 64*y. Att multiplicera med en jÃ¤mn 2-potens gÃ¶rs snabbast genom att shifta Ã¥t vÃ¤nster (shl).
 <p>
-Vilken färg som punkten man ritar ut har beror av två saker, dels vilket nummer (värde) man skriver till skärmminnet (0-255), dels av vilken färg det numret motsvarar. Om vi skriver putpixel(40,1,4) kommer färg nummer 4 att sättas vid punkten (40,1). Vilk
-en färg som färg 4 är bestäms av paletten. Paletten innehåller 256 färger och vilken färg var och en av de färgerna motsvarar. En färg byggs upp av tre variabler:
-<h4>Rött, Grönt och Blått</h4> Var och en av dessa kan variera mellan<h4>0 - 63</h4>Siffran anger färgens intensitet, 0=inget alls, 63=starkt. Detta ger 64^3 möjliga färger.
-<br>Exempel på några färger
+Vilken fÃ¤rg som punkten man ritar ut har beror av tvÃ¥ saker, dels vilket nummer (vÃ¤rde) man skriver till skÃ¤rmminnet (0-255), dels av vilken fÃ¤rg det numret motsvarar. Om vi skriver putpixel(40,1,4) kommer fÃ¤rg nummer 4 att sÃ¤ttas vid punkten (40,1). Vilk
+en fÃ¤rg som fÃ¤rg 4 Ã¤r bestÃ¤ms av paletten. Paletten innehÃ¥ller 256 fÃ¤rger och vilken fÃ¤rg var och en av de fÃ¤rgerna motsvarar. En fÃ¤rg byggs upp av tre variabler:
+<h4>RÃ¶tt, GrÃ¶nt och BlÃ¥tt</h4> Var och en av dessa kan variera mellan<h4>0 - 63</h4>Siffran anger fÃ¤rgens intensitet, 0=inget alls, 63=starkt. Detta ger 64^3 mÃ¶jliga fÃ¤rger.
+<br>Exempel pÃ¥ nÃ¥gra fÃ¤rger
 <pre>
-	Rött	Grönt	Blått
-Färg	0	0	0	=SVART
-	63	0	0	=RÖTT
-	20	0	0	=MÖRKRÖTT
-	0	63	0	=GRÖNT
-	0	0	63	=BLÅTT
+	RÃ¶tt	GrÃ¶nt	BlÃ¥tt
+FÃ¤rg	0	0	0	=SVART
+	63	0	0	=RÃ–TT
+	20	0	0	=MÃ–RKRÃ–TT
+	0	63	0	=GRÃ–NT
+	0	0	63	=BLÃ…TT
 	63	63	0	=GULT
 	63	32	0	=ORANGE
 	63	0	63	=VIOLETT
 	0	63	63	=CYAN
 	63	63	63	=VITT
-	32	32	32	=MELLANGRÅTT
-	10	10	10	=MÖRKGRÅTT
-	Och	Så	Vidare
+	32	32	32	=MELLANGRÃ…TT
+	10	10	10	=MÃ–RKGRÃ…TT
+	Och	SÃ¥	Vidare
 </pre>
-Mod 13h startas alltid med samma palett. Det går att ändra på den själv. Detta görs genom att skriva direkt till portarna 3C8h och 3C9h på grafikkortet. Låter det komplicerat? Det är det inte!.
-Låt säga att palletten som vi vill göra aktiv ligger lagrad i arrayen pal. Eftersom det är 256 färger och varje färg består av 3 bytes (R,G,B) blir pal 3*256 bytes lång. Om färg 0 är svart, färg 1 är blått och färg 2 grått, kommer pal att börja så här: 0,
-0,0, 0,0,63, 32,32,32 . . . Tre bytes för varje färg alltså. Här kommer en C-funktion för att sätta paletten pal:
+Mod 13h startas alltid med samma palett. Det gÃ¥r att Ã¤ndra pÃ¥ den sjÃ¤lv. Detta gÃ¶rs genom att skriva direkt till portarna 3C8h och 3C9h pÃ¥ grafikkortet. LÃ¥ter det komplicerat? Det Ã¤r det inte!.
+LÃ¥t sÃ¤ga att palletten som vi vill gÃ¶ra aktiv ligger lagrad i arrayen pal. Eftersom det Ã¤r 256 fÃ¤rger och varje fÃ¤rg bestÃ¥r av 3 bytes (R,G,B) blir pal 3*256 bytes lÃ¥ng. Om fÃ¤rg 0 Ã¤r svart, fÃ¤rg 1 Ã¤r blÃ¥tt och fÃ¤rg 2 grÃ¥tt, kommer pal att bÃ¶rja sÃ¥ hÃ¤r: 0,
+0,0, 0,0,63, 32,32,32 . . . Tre bytes fÃ¶r varje fÃ¤rg alltsÃ¥. HÃ¤r kommer en C-funktion fÃ¶r att sÃ¤tta paletten pal:
 <pre>
 void setpal(char*pal)
 {
  int i;
- outp(0x3C8,0);		//skicka värdet 0 till port 3c8h
+ outp(0x3C8,0);		//skicka vÃ¤rdet 0 till port 3c8h
  for(i=0;i&lt;256*3;i++)
  outp(0x3C9,pal[i]);	//skicka palettdata till port 3c9h
 }
 </pre>
-Att skicka 0 till port 3c8h betyder att vi ska skriva till paletten och att vi ska börja med färg 0. Efter att man skickat ett färgnummer till port 3c8h, är det bara att skicka 3 st bytes till port 3c9h, en för rött, en för grönt och en för blått, i den o
-rdningen. Om man skickar mer än 3 värden räknas pallettnumret automatiskt upp.<br>
+Att skicka 0 till port 3c8h betyder att vi ska skriva till paletten och att vi ska bÃ¶rja med fÃ¤rg 0. Efter att man skickat ett fÃ¤rgnummer till port 3c8h, Ã¤r det bara att skicka 3 st bytes till port 3c9h, en fÃ¶r rÃ¶tt, en fÃ¶r grÃ¶nt och en fÃ¶r blÃ¥tt, i den o
+rdningen. Om man skickar mer Ã¤n 3 vÃ¤rden rÃ¤knas pallettnumret automatiskt upp.<br>
 Ex:
 <pre>
  outp(0x3c8,5);
 
- outp(0x3c9,32);	//sätter färg 5, Rött till 32
- outp(0x3c9,32);	//sätter färg 5, Grönt till 32
- outp(0x3c9,32);	//            5, Blått      32
+ outp(0x3c9,32);	//sÃ¤tter fÃ¤rg 5, RÃ¶tt till 32
+ outp(0x3c9,32);	//sÃ¤tter fÃ¤rg 5, GrÃ¶nt till 32
+ outp(0x3c9,32);	//            5, BlÃ¥tt      32
 
- outp(0x3c9,0);		//sätter färg 6, Rött till 0
- outp(0x3c9,63);	//sätter färg 6, Grönt till 63
- outp(0x3c9,0);		//sätter färg 6, Blått till 0
+ outp(0x3c9,0);		//sÃ¤tter fÃ¤rg 6, RÃ¶tt till 0
+ outp(0x3c9,63);	//sÃ¤tter fÃ¤rg 6, GrÃ¶nt till 63
+ outp(0x3c9,0);		//sÃ¤tter fÃ¤rg 6, BlÃ¥tt till 0
 
- outp(0x3c9,10);	//sätter färg 7, Rött till 10
+ outp(0x3c9,10);	//sÃ¤tter fÃ¤rg 7, RÃ¶tt till 10
 
- Och Så Vidare
+ Och SÃ¥ Vidare
 </pre>
-Det smartaste är att skriva ett program som man gör en hel palett med, och sparar den i en fil. Sen kan man bara ladda in paletten och sätta den med ovanstående funktion. Det är ganska vanligt att det följer med palett-filer med olika demoexempel och prog
-ram, man kan känna igen dem genom att de är 3*256 = 768 bytes stora. Dessutom brukar dom ha ändelsen .pal eller .col.
+Det smartaste Ã¤r att skriva ett program som man gÃ¶r en hel palett med, och sparar den i en fil. Sen kan man bara ladda in paletten och sÃ¤tta den med ovanstÃ¥ende funktion. Det Ã¤r ganska vanligt att det fÃ¶ljer med palett-filer med olika demoexempel och prog
+ram, man kan kÃ¤nna igen dem genom att de Ã¤r 3*256 = 768 bytes stora. Dessutom brukar dom ha Ã¤ndelsen .pal eller .col.
 <p>
-I assembler kan man utnyttja en mycket snabb instruktion när man sätter paletten, rep outsb. Den skickar ut CX antal bytes till porten DX från DS:SI och räknar upp si för varje gång.<br>
-Assemblerrutin för att sätta paletten:
+I assembler kan man utnyttja en mycket snabb instruktion nÃ¤r man sÃ¤tter paletten, rep outsb. Den skickar ut CX antal bytes till porten DX frÃ¥n DS:SI och rÃ¤knar upp si fÃ¶r varje gÃ¥ng.<br>
+Assemblerrutin fÃ¶r att sÃ¤tta paletten:
 <pre>
 	mov	dx,03c8h	;portnummer till dx
 	xor	al,al		;al = 0
 	out	dx,al		;samma som outp(0x3c8,0) i C
-	lds	si,pal		;låt ds:si peka på paletten som ska sättas
+	lds	si,pal		;lÃ¥t ds:si peka pÃ¥ paletten som ska sÃ¤ttas
 	mov	cx,3*256	;antal bytes till CX
 	inc	dx		;dx = 3c9h
-	rep	outsb		;skicka 768 bytes från pal till port 3c9h
+	rep	outsb		;skicka 768 bytes frÃ¥n pal till port 3c9h
 </pre>
-En rolig effekt är att upprepade gånger rotera arrayen där palettdata är lagrade och sätta paletten. Detta är en mycket användbar och mycket använd teknik. Ett exempel på användningsområde är att göra en sk statisk plasma. Statisk plasma görs genom att ri
-ta ut en plasmabild på skärmen, sätta en palett med mjuka färgövergångar och sedan rotera och sätta paletten upprepade gånger.
+En rolig effekt Ã¤r att upprepade gÃ¥nger rotera arrayen dÃ¤r palettdata Ã¤r lagrade och sÃ¤tta paletten. Detta Ã¤r en mycket anvÃ¤ndbar och mycket anvÃ¤nd teknik. Ett exempel pÃ¥ anvÃ¤ndningsomrÃ¥de Ã¤r att gÃ¶ra en sk statisk plasma. Statisk plasma gÃ¶rs genom att ri
+ta ut en plasmabild pÃ¥ skÃ¤rmen, sÃ¤tta en palett med mjuka fÃ¤rgÃ¶vergÃ¥ngar och sedan rotera och sÃ¤tta paletten upprepade gÃ¥nger.
 <p>
-Bilden behöver inte vara en plasma-bild, det går bra med vilken bild som helst. Kod exemplet ritar ut en "3-dimensionell" sin/cos kurva på skärmen och roterar sedan paletten. De 3 dimensionerna består av Bredd, Höjd och Färg. Alltså egentligen bara 2-dime
-nsionellt med färg som 3:dje dimension. Man kan säga att exemplet är halvvägs påväg mot en plasma effekt, jag täker gå igenom en äkta plasma i ett senare avsnitt i demoskolan.<br>
-Här är koden för att rotera paletten i C:
+Bilden behÃ¶ver inte vara en plasma-bild, det gÃ¥r bra med vilken bild som helst. Kod exemplet ritar ut en "3-dimensionell" sin/cos kurva pÃ¥ skÃ¤rmen och roterar sedan paletten. De 3 dimensionerna bestÃ¥r av Bredd, HÃ¶jd och FÃ¤rg. AlltsÃ¥ egentligen bara 2-dime
+nsionellt med fÃ¤rg som 3:dje dimension. Man kan sÃ¤ga att exemplet Ã¤r halvvÃ¤gs pÃ¥vÃ¤g mot en plasma effekt, jag tÃ¤ker gÃ¥ igenom en Ã¤kta plasma i ett senare avsnitt i demoskolan.<br>
+HÃ¤r Ã¤r koden fÃ¶r att rotera paletten i C:
 <pre>
 void rotpal(char*pal,int first, int last)
 {
  char r,g,b;
  int i;
 
- r=pal[first*3 + 0];	//sätt r,g,b till första färgen (färg 0)
+ r=pal[first*3 + 0];	//sÃ¤tt r,g,b till fÃ¶rsta fÃ¤rgen (fÃ¤rg 0)
  g=pal[first*3 + 1];
  b=pal[first*3 + 2];
 
- for(i=first*3;i&lt;(last+1)*3;i++) //flytta ner alla färger ett steg
+ for(i=first*3;i&lt;(last+1)*3;i++) //flytta ner alla fÃ¤rger ett steg
  pal[i]=pal[i+3];
 
- pal[last*3+0]=r;	//sätt sista färgen (255) till r,g,b
+ pal[last*3+0]=r;	//sÃ¤tt sista fÃ¤rgen (255) till r,g,b
  pal[last*3+1]=g;
  pal[last*3+2]=b;
 
@@ -160,16 +160,16 @@ void rotpal(char*pal,int first, int last)
  setpal(pal);
 }
 </pre>
-Funktionen sparar första färgen som ska roteras, flyttar ner alla färger ett steg och sätter in den sparade på sista platsen. Sen väntar den på skärmsynk vilket gör att skärmen inte flimrar och till sist sätts den roterade paletten. Man behöver ej skicka 
-first och last som parametrar, det går utmärkt att skriva en funktion som roterar alla färgerna t ex. Det har dock vissa fördelar att kunna ange vilka färger som ska roteras. Till exempel kan man rotera alla färger utom färg 0 vilket gör att bakgrunden in
-te ändrar färg eller man kan använda en större palett än 256 färger och varje gång sätta de 256 första färgerna. just det har jag gjort i den medföljande koden. Där använder jag en palett på 512 färger och roterar färg 1 - 511 varje skärmuppdatering. Det 
-gör att det tar längre tid innan färgerna upprepas.
+Funktionen sparar fÃ¶rsta fÃ¤rgen som ska roteras, flyttar ner alla fÃ¤rger ett steg och sÃ¤tter in den sparade pÃ¥ sista platsen. Sen vÃ¤ntar den pÃ¥ skÃ¤rmsynk vilket gÃ¶r att skÃ¤rmen inte flimrar och till sist sÃ¤tts den roterade paletten. Man behÃ¶ver ej skicka 
+first och last som parametrar, det gÃ¥r utmÃ¤rkt att skriva en funktion som roterar alla fÃ¤rgerna t ex. Det har dock vissa fÃ¶rdelar att kunna ange vilka fÃ¤rger som ska roteras. Till exempel kan man rotera alla fÃ¤rger utom fÃ¤rg 0 vilket gÃ¶r att bakgrunden in
+te Ã¤ndrar fÃ¤rg eller man kan anvÃ¤nda en stÃ¶rre palett Ã¤n 256 fÃ¤rger och varje gÃ¥ng sÃ¤tta de 256 fÃ¶rsta fÃ¤rgerna. just det har jag gjort i den medfÃ¶ljande koden. DÃ¤r anvÃ¤nder jag en palett pÃ¥ 512 fÃ¤rger och roterar fÃ¤rg 1 - 511 varje skÃ¤rmuppdatering. Det 
+gÃ¶r att det tar lÃ¤ngre tid innan fÃ¤rgerna upprepas.
 <p>
-Det finns inte så mycket mer att säga, kommentarerna i koden borde förklara resten. Experimentera gärna med koden och se vad som händer, det är det bästa sättet att lära sig på.
+Det finns inte sÃ¥ mycket mer att sÃ¤ga, kommentarerna i koden borde fÃ¶rklara resten. Experimentera gÃ¤rna med koden och se vad som hÃ¤nder, det Ã¤r det bÃ¤sta sÃ¤ttet att lÃ¤ra sig pÃ¥.
 <p>
 Ladda hem demoskolan <a href="demo1.zip">del 
-1</a>. Innehåller c-koden, 
-denna text och exe-fil ifall kompileringen av någon anledning skulle gå snett.
+1</a>. InnehÃ¥ller c-koden, 
+denna text och exe-fil ifall kompileringen av nÃ¥gon anledning skulle gÃ¥ snett.
 <p>
 <hr>
 <p>
@@ -178,7 +178,7 @@ Abe-raham Breadfan
 
 s-mail: Albert Veli
         Spisringsg. 9
-        724 76 Västerås
+        724 76 VÃ¤sterÃ¥s
 </pre>
 <address>
 mail:<a href="mailto:dat94avi@idt.mdh.se">dat94avi@bilbo.mdh.se</a>.

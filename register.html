@@ -3,20 +3,20 @@
 <title>Mr Register</title>
 </head>
 <body>
-<h2>Register hos mikroprocessorn 8086 (286,386,486 samt även 8088)</h2>
+<h2>Register hos mikroprocessorn 8086 (286,386,486 samt Ã¤ven 8088)</h2>
 
-Ett register fungerar ungefär som en variabel i C eller något annat högnivåspråk fast mycket snabbare. Det 
-finns fyra stycken allmänna register Ax, Bx, Cx och Dx som är inblandade i de flesta instruktioner som 
-utförs i ett program. Registren består av ett word (16 bitar) vardera. Man kan dela in registren i två delar 
-(en byte (8 bitar) vardera), den vänstra (mest signifikanta) kallas den höga byten och den högra (minst 
-signifikanta) kallas den låga byten. Till exempel kallas den låga byten hos Ax för Al och den höga byten 
-hos Ax kallas Ah. På samma sätt kan man komma åt den låga resp höga byten hos Bx, Cx och Dx som 
+Ett register fungerar ungefÃ¤r som en variabel i C eller nÃ¥got annat hÃ¶gnivÃ¥sprÃ¥k fast mycket snabbare. Det 
+finns fyra stycken allmÃ¤nna register Ax, Bx, Cx och Dx som Ã¤r inblandade i de flesta instruktioner som 
+utfÃ¶rs i ett program. Registren bestÃ¥r av ett word (16 bitar) vardera. Man kan dela in registren i tvÃ¥ delar 
+(en byte (8 bitar) vardera), den vÃ¤nstra (mest signifikanta) kallas den hÃ¶ga byten och den hÃ¶gra (minst 
+signifikanta) kallas den lÃ¥ga byten. Till exempel kallas den lÃ¥ga byten hos Ax fÃ¶r Al och den hÃ¶ga byten 
+hos Ax kallas Ah. PÃ¥ samma sÃ¤tt kan man komma Ã¥t den lÃ¥ga resp hÃ¶ga byten hos Bx, Cx och Dx som 
 Bl,Bh; Cl,Ch och Dl,Dh.
 <ul>
 <pre>
 Faktaruta 1
 *************************
-* Allmänna register	*
+* AllmÃ¤nna register	*
 *			*
 * Bit 15-8 7-0		*
 * Ax	Ah, Al		*
@@ -26,74 +26,74 @@ Faktaruta 1
 *************************
 </pre>
 </ul>
-MOV är den vanligaste assembler instruktionen. Den flyttar data till en destinationen från en källa. 
+MOV Ã¤r den vanligaste assembler instruktionen. Den flyttar data till en destinationen frÃ¥n en kÃ¤lla. 
 <br>
 Exempel:	mov	Ax, 5	;flyttar talet 5 till Ax.<br>
-Kom ihåg att destinationen alltid står först sedan ett kommatecken och sist källan (source på engelska). 
+Kom ihÃ¥g att destinationen alltid stÃ¥r fÃ¶rst sedan ett kommatecken och sist kÃ¤llan (source pÃ¥ engelska). 
 Man kan bara skriva en instruktion per rad, instruktionen avslutas med return, semikolon betyder 
-kommentar. I vissa högnivåspråk kan man skriva assemblerinstruktioner direkt i koden. Om man gör det 
-är det inte säkert att semikolon fungerar som kommentar. I Borland C måste man  använda borlands 
-kommentartecken istället för semikolon.
+kommentar. I vissa hÃ¶gnivÃ¥sprÃ¥k kan man skriva assemblerinstruktioner direkt i koden. Om man gÃ¶r det 
+Ã¤r det inte sÃ¤kert att semikolon fungerar som kommentar. I Borland C mÃ¥ste man  anvÃ¤nda borlands 
+kommentartecken istÃ¤llet fÃ¶r semikolon.
 <p>
 <pre>
-Exempel på inline assembler i C:
+Exempel pÃ¥ inline assembler i C:
 	asm	mov	Ax, 5	// flyttar talet 5 till Ax, asm betyder att nu 
 				//kommer en assembler instruktion.
 </pre>
-Nästa exempel är ett fullt körbart exempel som använder instruktionen ADD. ADD adderar två register och 
-placerar resultatet i det första.
+NÃ¤sta exempel Ã¤r ett fullt kÃ¶rbart exempel som anvÃ¤nder instruktionen ADD. ADD adderar tvÃ¥ register och 
+placerar resultatet i det fÃ¶rsta.
 <p>
-;Exempel på körbart program som adderar två tal och placerar resultatet i variabeln resultat
+;Exempel pÃ¥ kÃ¶rbart program som adderar tvÃ¥ tal och placerar resultatet i variabeln resultat
 <ul>
 <pre>
 .model small
-.Data				; segment för data
+.Data				; segment fÃ¶r data
 
 TAL1		DW	5	; deklarera variabler
-TAL2		DW	7	; deklarera tal2 som ett word med startvärde 7
-RESULTAT	DW	?	;resultat word som vi inte vet värdet av än
+TAL2		DW	7	; deklarera tal2 som ett word med startvÃ¤rde 7
+RESULTAT	DW	?	;resultat word som vi inte vet vÃ¤rdet av Ã¤n
 
-.Code				; segment för kod
+.Code				; segment fÃ¶r kod
 
-Start:	mov	Ax, TAL1	;kopierar tal1 till ax (talet 5 alltså)
+Start:	mov	Ax, TAL1	;kopierar tal1 till ax (talet 5 alltsÃ¥)
 	add	Ax, TAL2	;adderar tal2 (7) till Ax (5) och placerar
 				;resultatet (12) i Ax
 	mov	RESULTAT,Ax	;kopierar Ax (12) till variabeln resultat
 
-END	Start			;talar om för assemblatorn att programmet slutar här och att det börjar vid start
+END	Start			;talar om fÃ¶r assemblatorn att programmet slutar hÃ¤r och att det bÃ¶rjar vid start
 </pre>
 </ul>
-första raden talar om vilken typ programmet skall vara av, small är den minsta modellen men fungerar för 
-alla program som jag tänker gå igenom (det går t ex att ställa in borland c's kompilator för vilken modell 
-man vill ha och det är precis samma namn där Huge är den största). Den andra raden talar om att nu 
-kommer variabeldeklarationer precis som man gör överst i ett c eller pascal program. DW betyder declare 
-word, man kan även skriva DB som betyder declare byte. .Code betyder att nu börjar själva koden. Mellan 
-.Code och END är programmet, vanligtvis litet längre men strukturen på assemblerprogrammen ser ut på 
-det här sättet. Ett program innehåller alltid minst två segment. Först datasegmentet som innehåller 
-variabler och arrayer och sen kodsegmentet som innehåller själva programmet. 
+fÃ¶rsta raden talar om vilken typ programmet skall vara av, small Ã¤r den minsta modellen men fungerar fÃ¶r 
+alla program som jag tÃ¤nker gÃ¥ igenom (det gÃ¥r t ex att stÃ¤lla in borland c's kompilator fÃ¶r vilken modell 
+man vill ha och det Ã¤r precis samma namn dÃ¤r Huge Ã¤r den stÃ¶rsta). Den andra raden talar om att nu 
+kommer variabeldeklarationer precis som man gÃ¶r Ã¶verst i ett c eller pascal program. DW betyder declare 
+word, man kan Ã¤ven skriva DB som betyder declare byte. .Code betyder att nu bÃ¶rjar sjÃ¤lva koden. Mellan 
+.Code och END Ã¤r programmet, vanligtvis litet lÃ¤ngre men strukturen pÃ¥ assemblerprogrammen ser ut pÃ¥ 
+det hÃ¤r sÃ¤ttet. Ett program innehÃ¥ller alltid minst tvÃ¥ segment. FÃ¶rst datasegmentet som innehÃ¥ller 
+variabler och arrayer och sen kodsegmentet som innehÃ¥ller sjÃ¤lva programmet. 
 <p>
 Nu kommer samma program i inline assembler i c:
 <ul>
 <pre>
-// addera två tal med hjälp av inline assembler
+// addera tvÃ¥ tal med hjÃ¤lp av inline assembler
 
 void main(void)
 {
 int	tal1 = 5,tal2 = 7,resultat;
 asm{
 	mov	Ax,tal1		// kopiera tal1 till Ax OBS att tal1 
-				// måste vara int (16 bitar)
+				// mÃ¥ste vara int (16 bitar)
 	add	Ax,tal2
 	mov	resultat,Ax
 }
-} // slut på main
+} // slut pÃ¥ main
 </pre>
 </ul>
-Detta program gör exakt samma sak som 	resultat = tal1 + tal2;	skulle ha gjort fast litet snabbare. 
-Det är dock inte vid vanlig addition man gör de största tidsvinsterna med assembler utan vid olika slags 
-grafik hantering. Bara att använda register istället för minnesvariabler går upp till 100 ggr fortare. 
-Observera att man istället för Ax kunnat använda enbart Al eller Ah (eller vilket som helst av de andra 
-allmänna registren) eftersom talen var mindre än 256.
+Detta program gÃ¶r exakt samma sak som 	resultat = tal1 + tal2;	skulle ha gjort fast litet snabbare. 
+Det Ã¤r dock inte vid vanlig addition man gÃ¶r de stÃ¶rsta tidsvinsterna med assembler utan vid olika slags 
+grafik hantering. Bara att anvÃ¤nda register istÃ¤llet fÃ¶r minnesvariabler gÃ¥r upp till 100 ggr fortare. 
+Observera att man istÃ¤llet fÃ¶r Ax kunnat anvÃ¤nda enbart Al eller Ah (eller vilket som helst av de andra 
+allmÃ¤nna registren) eftersom talen var mindre Ã¤n 256.
 <ul>
 <pre>
 Faktaruta 2<br>
@@ -115,34 +115,34 @@ Faktaruta 2<br>
 </pre>
 </ul>
 <h2>Segmentregister</h2>
-Innan vi tittar mer på registren behöver vi veta litet grand om segment. Förr i tiden användes ett 16-
-bitarsregister för att peka ut en minnescell vilket gör att antalet unika adresser endast var 65536 stycken. 
-För att kunna nå en hel megabyte (1024 K) måste man använda sig av något som kallas 
-minnessegmentering vilket ger en adress på 20 bitar. Minnet är uppdelat i segment som kan vara max 64 
-K vardera. För att kunna nå en viss adress måste man först ange vilket segment man tänker använda i ett 
-speciellt segmentregister och sedan använda vanlig 16-bitars adressering inom det segmentet. Det finns 
-fyra segmentregister utav vilka vi kommer att använda två:DS och ES. DS pekar ut datasegmentet som 
-innehåller variabler och arrayer, ES är extra segmentregister som man brukar använda till att peka ut t ex 
-början av bildskärmen. När man skriver t ex mov Ax, TAL1, där TAL1 är en variabel, så antas automatiskt 
-att det är ds som pekar ut segmentet som TAL1 finns i. Man kan även använda segmentöverskridning och 
-nå data från ett annat segment genom att skriva t ex mov Ax, ES:[Bx]. Denna instruktion kopierar 
-innehållet i adressen som pekas ut av es + bx till Ax. Den fysiska adressen beräknas genom att ta 
-innehållet i segmentregistret * 16 + index (det som står efter kolonet). Om es t ex innehåller 64 och bx 
-innehåller 5 så blir adressen som pekas ut av ES:Bx = 64*16 + 5 = 1029 och mov Ax, ES:[Bx] kopierar 
-alltså innehållet i minnesadress 1029 till Ax. Det finns även ett kodsegment register, CS som pekar ut 
-kodsegmentet, men det sköts om automatiskt så det behöver man inte bry sig om som programmerare. 
-Sedan finns även ett stacksegmentregister, SS som pekar ut början av stacken.
+Innan vi tittar mer pÃ¥ registren behÃ¶ver vi veta litet grand om segment. FÃ¶rr i tiden anvÃ¤ndes ett 16-
+bitarsregister fÃ¶r att peka ut en minnescell vilket gÃ¶r att antalet unika adresser endast var 65536 stycken. 
+FÃ¶r att kunna nÃ¥ en hel megabyte (1024 K) mÃ¥ste man anvÃ¤nda sig av nÃ¥got som kallas 
+minnessegmentering vilket ger en adress pÃ¥ 20 bitar. Minnet Ã¤r uppdelat i segment som kan vara max 64 
+K vardera. FÃ¶r att kunna nÃ¥ en viss adress mÃ¥ste man fÃ¶rst ange vilket segment man tÃ¤nker anvÃ¤nda i ett 
+speciellt segmentregister och sedan anvÃ¤nda vanlig 16-bitars adressering inom det segmentet. Det finns 
+fyra segmentregister utav vilka vi kommer att anvÃ¤nda tvÃ¥:DS och ES. DS pekar ut datasegmentet som 
+innehÃ¥ller variabler och arrayer, ES Ã¤r extra segmentregister som man brukar anvÃ¤nda till att peka ut t ex 
+bÃ¶rjan av bildskÃ¤rmen. NÃ¤r man skriver t ex mov Ax, TAL1, dÃ¤r TAL1 Ã¤r en variabel, sÃ¥ antas automatiskt 
+att det Ã¤r ds som pekar ut segmentet som TAL1 finns i. Man kan Ã¤ven anvÃ¤nda segmentÃ¶verskridning och 
+nÃ¥ data frÃ¥n ett annat segment genom att skriva t ex mov Ax, ES:[Bx]. Denna instruktion kopierar 
+innehÃ¥llet i adressen som pekas ut av es + bx till Ax. Den fysiska adressen berÃ¤knas genom att ta 
+innehÃ¥llet i segmentregistret * 16 + index (det som stÃ¥r efter kolonet). Om es t ex innehÃ¥ller 64 och bx 
+innehÃ¥ller 5 sÃ¥ blir adressen som pekas ut av ES:Bx = 64*16 + 5 = 1029 och mov Ax, ES:[Bx] kopierar 
+alltsÃ¥ innehÃ¥llet i minnesadress 1029 till Ax. Det finns Ã¤ven ett kodsegment register, CS som pekar ut 
+kodsegmentet, men det skÃ¶ts om automatiskt sÃ¥ det behÃ¶ver man inte bry sig om som programmerare. 
+Sedan finns Ã¤ven ett stacksegmentregister, SS som pekar ut bÃ¶rjan av stacken.
 
 <h2>Indexregister</h2>
 
-Det finns två indexregister, Si och Di. Dessa brukar användas till att peka på strängar med data i minnet 
-och kallas därför också strängindexregister. Med sträng menas inte nödvändigtvis en textsträng, det kan 
-också vara en sträng med färger till en palett eller en sträng med bitinformation i ett bitplan. Si är 
-förkortning för SourceIndex (källindex) och Di betyder DestinationsIndex. Man brukar använda Si 
-(källindex) tillsammans med Ds (datasegmentet) och di (destinationsindex) tillsammans med Es (extra 
-segment). Bland annat används dessa kombinationer tillsammans med instruktionerna MOVS 
-(movestring), LODS (loadstring) och STOS (storestring) som flyttar strängar med data inom minnet och 
-mellan minnet och register Ax (Se listan med instruktioner längre ned).
+Det finns tvÃ¥ indexregister, Si och Di. Dessa brukar anvÃ¤ndas till att peka pÃ¥ strÃ¤ngar med data i minnet 
+och kallas dÃ¤rfÃ¶r ocksÃ¥ strÃ¤ngindexregister. Med strÃ¤ng menas inte nÃ¶dvÃ¤ndigtvis en textstrÃ¤ng, det kan 
+ocksÃ¥ vara en strÃ¤ng med fÃ¤rger till en palett eller en strÃ¤ng med bitinformation i ett bitplan. Si Ã¤r 
+fÃ¶rkortning fÃ¶r SourceIndex (kÃ¤llindex) och Di betyder DestinationsIndex. Man brukar anvÃ¤nda Si 
+(kÃ¤llindex) tillsammans med Ds (datasegmentet) och di (destinationsindex) tillsammans med Es (extra 
+segment). Bland annat anvÃ¤nds dessa kombinationer tillsammans med instruktionerna MOVS 
+(movestring), LODS (loadstring) och STOS (storestring) som flyttar strÃ¤ngar med data inom minnet och 
+mellan minnet och register Ax (Se listan med instruktioner lÃ¤ngre ned).
 <ul>
 <pre>
 Faktaruta 3<br>
@@ -151,7 +151,7 @@ Faktaruta 3<br>
 *								*
 * Bit 15-8 7-0							*
 * Ax	Ah, Al							*
-* Bx	Ah, Al			Allmänna register		*
+* Bx	Ah, Al			AllmÃ¤nna register		*
 * Cx	Ah, Al							*
 * Dx	Ah, Al							*
 *								*
@@ -172,21 +172,21 @@ Faktaruta 3<br>
 *****************************************************************
 </pre>
 </ul>
-Cs:ip innehåller adressen till nästa instruktion som ska utföras (behöver vi inte bry oss om). Flags 
-innehåller information om senast utförda beräkning eller jämförelse (om noll eller spill osv), används bl a 
+Cs:ip innehÃ¥ller adressen till nÃ¤sta instruktion som ska utfÃ¶ras (behÃ¶ver vi inte bry oss om). Flags 
+innehÃ¥ller information om senast utfÃ¶rda berÃ¤kning eller jÃ¤mfÃ¶relse (om noll eller spill osv), anvÃ¤nds bl a 
 vid villkorliga hopp.
 
 <h2>REGISTERS PERSONLIGHET</h2>
 
-Alla de fyra allmänna registren klarar av att lagra tal mellan 0 och 65535, de kan laddas från minnet (mov 
-Dx, TAL1), de kan skriva i minnet (mov resultat, Ax) och de kan användas i aritmetiska och logiska 
+Alla de fyra allmÃ¤nna registren klarar av att lagra tal mellan 0 och 65535, de kan laddas frÃ¥n minnet (mov 
+Dx, TAL1), de kan skriva i minnet (mov resultat, Ax) och de kan anvÃ¤ndas i aritmetiska och logiska 
 operationer ( ADD Ax,Bx), (AND Cx, 1). Det finns dock vissa saker som endast ett register klarar av eller 
-är specialicerat på, vilket ger registren en viss personlighet.
+Ã¤r specialicerat pÃ¥, vilket ger registren en viss personlighet.
 
 <h3>AX - registret</h3>
 
-Kallas också ackumulatorn. Ax - registret är alltid inblandat vid multiplikation och division och är även 
-snabbast på vissa andra operationer.
+Kallas ocksÃ¥ ackumulatorn. Ax - registret Ã¤r alltid inblandat vid multiplikation och division och Ã¤r Ã¤ven 
+snabbast pÃ¥ vissa andra operationer.
 <ul>
 <pre>
 Exempel:
@@ -195,39 +195,39 @@ Exempel:
 	mul	Bx	;multiplicerar Bx med Ax, resultatet (50) placeras i Ax
 </pre>
 </ul>
-De 16 lägsta bitarna placeras i Ax och de 16 högsta bitarna placeras i DX. Om resultatet är mindre än 
-65536 hamnar alltså alla signifikanta bitar i Ax (alla bitar som betyder något).
+De 16 lÃ¤gsta bitarna placeras i Ax och de 16 hÃ¶gsta bitarna placeras i DX. Om resultatet Ã¤r mindre Ã¤n 
+65536 hamnar alltsÃ¥ alla signifikanta bitar i Ax (alla bitar som betyder nÃ¥got).
 
 <h3>BX - registret</h3>
-kan användas för att peka ut minnesceller i minnet
+kan anvÃ¤ndas fÃ¶r att peka ut minnesceller i minnet
 <h3>CX - registret</h3>
 
-Cx - registret används bl a som loopräknare
+Cx - registret anvÃ¤nds bl a som looprÃ¤knare
 <ul>
 <pre>
 Exempel:
 
-	mov	Cx, 50	;flytta antalet ggr något ska göras till Cx
-enloop:	...		;enloop är en sk label som markerar en 
+	mov	Cx, 50	;flytta antalet ggr nÃ¥got ska gÃ¶ras till Cx
+enloop:	...		;enloop Ã¤r en sk label som markerar en 
 			;position i minnet
-	...		;namnet på labeln byts ut av assembleraren 
+	...		;namnet pÃ¥ labeln byts ut av assembleraren 
 			;mot en minnesadress
 	...
 	loop	enloop	;minskar cx med ett och hoppar tillbaka till labeln 
 			;som anges efter loop
-			;om cx är skilt från noll
+			;om cx Ã¤r skilt frÃ¥n noll
 </pre>
 </ul>
-Loop-instruktionen motsvarar en for-sats i c eller pascal och använder alltid Cx som loopräknare. Vad som 
-skall göras i loopen bestäms naturligtvis av programmeraren.
+Loop-instruktionen motsvarar en for-sats i c eller pascal och anvÃ¤nder alltid Cx som looprÃ¤knare. Vad som 
+skall gÃ¶ras i loopen bestÃ¤ms naturligtvis av programmeraren.
 
 <h3>DX-registret</h3>
-används bland annat vid multiplikation (se Ax) och division (se lista över instruktioner).
+anvÃ¤nds bland annat vid multiplikation (se Ax) och division (se lista Ã¶ver instruktioner).
 
-<h3>SI - registret</h3> (källindex)
+<h3>SI - registret</h3> (kÃ¤llindex)
 <br>
-Si (SourceIndex) kan användas precis som de allmänna registren men Si andvänds speciellt till att peka 
-på data i minnet.
+Si (SourceIndex) kan anvÃ¤ndas precis som de allmÃ¤nna registren men Si andvÃ¤nds speciellt till att peka 
+pÃ¥ data i minnet.
 <ul>
 <pre>
 Exempel:
@@ -241,39 +241,39 @@ Palett	DB	0,1, 2, 3, 4, 5 . . .
 	.
 	mov	Si, OFFSET Palett	;laddar si med 
 					;offseten till arrayen palett
-	lodsb				;laddar Ax med innehållet i 
+	lodsb				;laddar Ax med innehÃ¥llet i 
 	.				;adressen DS:SI
-	.				;som är första byten i arrayen palett
+	.				;som Ã¤r fÃ¶rsta byten i arrayen palett
 </pre>
 </ul>
 OFFSET Palett ger skillnaden (offseten) mellan adressen till Palett och Ds (datasegmentet). Instruktionen 
-lodsb kopierar en byte från adressen som ds:si pekar på, till Ax. Dessutom räknas si upp ett steg så att om 
-man gör lodsb igen, laddas andra byten i Palett till Ax. Lodsw laddar två byte (ett word) på samma sätt fast 
-räknar upp Si med två steg.
+lodsb kopierar en byte frÃ¥n adressen som ds:si pekar pÃ¥, till Ax. Dessutom rÃ¤knas si upp ett steg sÃ¥ att om 
+man gÃ¶r lodsb igen, laddas andra byten i Palett till Ax. Lodsw laddar tvÃ¥ byte (ett word) pÃ¥ samma sÃ¤tt fast 
+rÃ¤knar upp Si med tvÃ¥ steg.
 
 <h3>DI - registret</h3>
 
-Di (DestinationsIndex) används precis som Si fast pekar på destinationen istället för källan.
+Di (DestinationsIndex) anvÃ¤nds precis som Si fast pekar pÃ¥ destinationen istÃ¤llet fÃ¶r kÃ¤llan.
 <ul>
 <pre>
 Exempel:
-	mov	Ax, 0B800H	;adressen till skärmen i textmod
+	mov	Ax, 0B800H	;adressen till skÃ¤rmen i textmod
 				;H betyder hexadecimalt
 	mov	Es,Ax		;ladda es med adressen till bildminnet
-	mov	Di, 0		;första byten på skärmen
-				;(längst upp till vänster)
+	mov	Di, 0		;fÃ¶rsta byten pÃ¥ skÃ¤rmen
+				;(lÃ¤ngst upp till vÃ¤nster)
 	mov	Ah, 'A'		;bokstaven stora A ska skrivas
-	mov	Al, 7+ 4*16	;vit (färg 7) text på röd (färg 4) bakgrund
-	stosw			;skriv ut tecknet och färgattributet
-				;till skärmen
+	mov	Al, 7+ 4*16	;vit (fÃ¤rg 7) text pÃ¥ rÃ¶d (fÃ¤rg 4) bakgrund
+	stosw			;skriv ut tecknet och fÃ¤rgattributet
+				;till skÃ¤rmen
 </pre>
 </ul>
-Instruktionen stosw kopierar ett word från Ax till adressen som es:di pekar på. Dessutom räknas di upp två 
-steg så att om man gör stosw igen, skrivs samma tecken och attribut ut på nästa position på skärmen. (se 
-Avsnittet Bildskärmen i Textmod för mera information om adresser, färger osv). Stosb gör samma sak 
-som stosw fast flyttar bara en byte och räknar bara upp di ett steg.
+Instruktionen stosw kopierar ett word frÃ¥n Ax till adressen som es:di pekar pÃ¥. Dessutom rÃ¤knas di upp tvÃ¥ 
+steg sÃ¥ att om man gÃ¶r stosw igen, skrivs samma tecken och attribut ut pÃ¥ nÃ¤sta position pÃ¥ skÃ¤rmen. (se 
+Avsnittet BildskÃ¤rmen i Textmod fÃ¶r mera information om adresser, fÃ¤rger osv). Stosb gÃ¶r samma sak 
+som stosw fast flyttar bara en byte och rÃ¤knar bara upp di ett steg.
 <p>
-För att komma vidare läs igenom listan på de vanligaste och mest användbara
+FÃ¶r att komma vidare lÃ¤s igenom listan pÃ¥ de vanligaste och mest anvÃ¤ndbara
 <a href="instrukt.html">Assembler 
 instruktionerna!!!</a>. <p>
 950519 Mr "Register" Veli

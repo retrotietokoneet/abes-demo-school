@@ -3,17 +3,17 @@
 <title>bin till hex och vice versa</title>
 </head>
 <body>
-<h2>Lite kort om binär och hexadecimal talrepresentation.</h2>
+<h2>Lite kort om binÃ¤r och hexadecimal talrepresentation.</h2>
 
-Vårt talsystem kallas för det decimala talsystemet för att det har tio siffror 0-9, större tal än nio har minst 
-två siffror.Ett binärt tal består endast av ettor och nollor. Ett till tio blir binärt 1, 10, 11 100, 101, 110, 111, 
-1000, 1001, 1010. En binär siffra (etta eller nolla) kallas för en bit, åtta bitar kallas en byte och Två byte 
-(sexton bitar) kallas för ett word. Det högsta tal man kan åstadkomma med åtta bitar är ju om alla bitarna 
-är ettor 11111111. Hur mycket är det i vårt talsystem? För att räkna om från binärt till decimalt börjar man 
-från höger och multiplicerar siffran med 2 upphöjt till siffrans plats från höger. Första siffran har plats 0. 
-Tvåan kallas basen och är antalet siffror som talsystemet har.
+VÃ¥rt talsystem kallas fÃ¶r det decimala talsystemet fÃ¶r att det har tio siffror 0-9, stÃ¶rre tal Ã¤n nio har minst 
+tvÃ¥ siffror.Ett binÃ¤rt tal bestÃ¥r endast av ettor och nollor. Ett till tio blir binÃ¤rt 1, 10, 11 100, 101, 110, 111, 
+1000, 1001, 1010. En binÃ¤r siffra (etta eller nolla) kallas fÃ¶r en bit, Ã¥tta bitar kallas en byte och TvÃ¥ byte 
+(sexton bitar) kallas fÃ¶r ett word. Det hÃ¶gsta tal man kan Ã¥stadkomma med Ã¥tta bitar Ã¤r ju om alla bitarna 
+Ã¤r ettor 11111111. Hur mycket Ã¤r det i vÃ¥rt talsystem? FÃ¶r att rÃ¤kna om frÃ¥n binÃ¤rt till decimalt bÃ¶rjar man 
+frÃ¥n hÃ¶ger och multiplicerar siffran med 2 upphÃ¶jt till siffrans plats frÃ¥n hÃ¶ger. FÃ¶rsta siffran har plats 0. 
+TvÃ¥an kallas basen och Ã¤r antalet siffror som talsystemet har.
 
-Binärt tal:
+BinÃ¤rt tal:
 <ul>
 <pre>
 	1	1	1	1	1	1	1	1
@@ -23,41 +23,41 @@ Binärt tal:
 </pre>
 = 255 decimalt.
 </ul>
-En byte kan alltså anta värden mellan 0 till 255 vilket blir 256 olika kombinationer. En byte var alltså åtta 
-bitar och 2^8 är just 256. Ett word (16 bitar) borde då kunna bli max 2^16 minus ett (räkna bort nollan) 
-vilket blir 65535. Räkna efter själv och se om det stämmer. När man programmerar i assembler använder 
-man oftast bytes och words men det blir lite oöverskådligt att bara använda massa ettor och nollor, därför 
-brukar man skriva talen i det hexadecimala talsystemet. Hexadecmala tal (hex-tal) har basen 16. Hur går 
-det då? det finns ju bara tio siffror! Jo man får ta hjälp av bokstäver också. Basen sexton innebär ensiffriga 
-tal från noll till femton, dessa är: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F. Att räkna om från Hexadecimalt 
-till decimalt sker likadant som från binärt till decimalt:
+En byte kan alltsÃ¥ anta vÃ¤rden mellan 0 till 255 vilket blir 256 olika kombinationer. En byte var alltsÃ¥ Ã¥tta 
+bitar och 2^8 Ã¤r just 256. Ett word (16 bitar) borde dÃ¥ kunna bli max 2^16 minus ett (rÃ¤kna bort nollan) 
+vilket blir 65535. RÃ¤kna efter sjÃ¤lv och se om det stÃ¤mmer. NÃ¤r man programmerar i assembler anvÃ¤nder 
+man oftast bytes och words men det blir lite oÃ¶verskÃ¥dligt att bara anvÃ¤nda massa ettor och nollor, dÃ¤rfÃ¶r 
+brukar man skriva talen i det hexadecimala talsystemet. Hexadecmala tal (hex-tal) har basen 16. Hur gÃ¥r 
+det dÃ¥? det finns ju bara tio siffror! Jo man fÃ¥r ta hjÃ¤lp av bokstÃ¤ver ocksÃ¥. Basen sexton innebÃ¤r ensiffriga 
+tal frÃ¥n noll till femton, dessa Ã¤r: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F. Att rÃ¤kna om frÃ¥n Hexadecimalt 
+till decimalt sker likadant som frÃ¥n binÃ¤rt till decimalt:
 <ul>
 <pre>
 Hex-tal:	7	B
 		*   +	*
 		16^1	16^0
 
-=		7*16 +	11*1	= 123	(B är ju hex för 11).
+=		7*16 +	11*1	= 123	(B Ã¤r ju hex fÃ¶r 11).
 </pre>
 </ul>
-Jämför skillnaden mellan den decimala, hexadecimala och binära talrepresentationen för samma tal:
+JÃ¤mfÃ¶r skillnaden mellan den decimala, hexadecimala och binÃ¤ra talrepresentationen fÃ¶r samma tal:
 <ul>
 Decimalt:	123<br>
 Hexadecimalt:	7B<br>
-Binärt:		01111011<br>
+BinÃ¤rt:		01111011<br>
 </ul>
-Anledningen till att man använder just det hexadecimala talsystemet är att det finns en enkel metod att 
-omvandla från hexadecimalt till binärt och vice versa. Det är nämligen bara att omvandla siffra för siffra. 
-Om vi vill omvandla Talet 7B Hex till binärt tar man först 7 hex = 0111 binärt sen tar man B hex vilket ju är 
-11 decimalt vilket är 1011 binärt. sen lägger man siffrorna efter varandra 0111 1011 vilket ju som vi 
-tidigare sett är just 7B Hex. Det är alltid så att en hexadecimal siffra motsvarar fyra binära siffror (bitar). En 
-byte kunde ju max vara 11111111 binärt vilket blir 1111 1111 = 15  15 = F F. FF alltså, vilket ju också är 
-det maximala talet man kan skriva med två Hex siffror. På samma sätt blir ett word (16 bitar) alltid fyra Hex 
-siffror. Det största talet man kan skriva med fyra hex-siffror är ju talet FFFF vilket blir 15*16^0 + 15*16^1 + 
-15*16^2 + 15*16^3 = 65535 som vi tidigare antog vara det största talet ett word kunde vara vilket visat sig 
-stämma.
-Metoden att omvandla siffra för siffra fungerar alltså inte på "våra" decimala tal utan endast mellan hex och 
-binär tal. Om du vill veta mer om binära och hexadecimala tal gå till biblioteket, leta på nätet eller fråga en 
+Anledningen till att man anvÃ¤nder just det hexadecimala talsystemet Ã¤r att det finns en enkel metod att 
+omvandla frÃ¥n hexadecimalt till binÃ¤rt och vice versa. Det Ã¤r nÃ¤mligen bara att omvandla siffra fÃ¶r siffra. 
+Om vi vill omvandla Talet 7B Hex till binÃ¤rt tar man fÃ¶rst 7 hex = 0111 binÃ¤rt sen tar man B hex vilket ju Ã¤r 
+11 decimalt vilket Ã¤r 1011 binÃ¤rt. sen lÃ¤gger man siffrorna efter varandra 0111 1011 vilket ju som vi 
+tidigare sett Ã¤r just 7B Hex. Det Ã¤r alltid sÃ¥ att en hexadecimal siffra motsvarar fyra binÃ¤ra siffror (bitar). En 
+byte kunde ju max vara 11111111 binÃ¤rt vilket blir 1111 1111 = 15  15 = F F. FF alltsÃ¥, vilket ju ocksÃ¥ Ã¤r 
+det maximala talet man kan skriva med tvÃ¥ Hex siffror. PÃ¥ samma sÃ¤tt blir ett word (16 bitar) alltid fyra Hex 
+siffror. Det stÃ¶rsta talet man kan skriva med fyra hex-siffror Ã¤r ju talet FFFF vilket blir 15*16^0 + 15*16^1 + 
+15*16^2 + 15*16^3 = 65535 som vi tidigare antog vara det stÃ¶rsta talet ett word kunde vara vilket visat sig 
+stÃ¤mma.
+Metoden att omvandla siffra fÃ¶r siffra fungerar alltsÃ¥ inte pÃ¥ "vÃ¥ra" decimala tal utan endast mellan hex och 
+binÃ¤r tal. Om du vill veta mer om binÃ¤ra och hexadecimala tal gÃ¥ till biblioteket, leta pÃ¥ nÃ¤tet eller frÃ¥ga en 
 kompis.
 
 <ul>
@@ -66,12 +66,12 @@ Faktaruta 1
 *********************************************************
 * Byte = 8 bitar					*
 * 0 - 255 decimalt					*
-* 00000000 - 11111111 binärt				*
+* 00000000 - 11111111 binÃ¤rt				*
 * 00 - FF Hex						*
 *							*
 * word = 16 bitar					*
 * 0 - 65535 decimalt					*
-* 0000000000000000 - 1111111111111111 binärt		*
+* 0000000000000000 - 1111111111111111 binÃ¤rt		*
 * 0000 - FFFF Hex					*
 *********************************************************
 </pre>

@@ -4,11 +4,11 @@
 </head>
 <body>
 <h2>Instruktionerna</h2>
-Här en lista på de vanligaste och mest användbara assembler instruktionerna. Till vänster står hur 
-instruktionen används med beteckningar och till höger ett exempel med verkliga register. Mem är en 
+HÃ¤r en lista pÃ¥ de vanligaste och mest anvÃ¤ndbara assembler instruktionerna. Till vÃ¤nster stÃ¥r hur 
+instruktionen anvÃ¤nds med beteckningar och till hÃ¶ger ett exempel med verkliga register. Mem Ã¤r en 
 variabel i minnet som kan kallas vad som helst, tex Kalle, Pris, Therese, color, resultat osv.
 <p>
-Använda beteckningar:
+AnvÃ¤nda beteckningar:
 <pre>
 <ul>
 reg	8 eller 16-bits register
@@ -17,16 +17,16 @@ reg16	endast 16-bits register
 segreg	segmentregister alltid 16bitar
 mem	minnet
 mem16	word i minnet
-immed	en konstant, immediate (direkt på svenska).
+immed	en konstant, immediate (direkt pÃ¥ svenska).
 label	en minnesplats i code segmentet
 accum	AX eller AL
 </ul>
 </pre>
 <p>
-<h2>Dataförflyttningsinstruktioner</h2>
+<h2>DatafÃ¶rflyttningsinstruktioner</h2>
 
 <h3>MOV</h3>
-Kopierar värdet från källan till destinationen
+Kopierar vÃ¤rdet frÃ¥n kÃ¤llan till destinationen
 <ul>
 <pre>
 mov	reg,reg		mov	ax,bx
@@ -41,7 +41,7 @@ mov	mem16,segreg	mov	old_data, ds
 </ul>
 </pre>
 <h3>PUSH</h3>
-lagrar ett värde på stacken (alltid 16 bitar) enligt principen sist in först ut
+lagrar ett vÃ¤rde pÃ¥ stacken (alltid 16 bitar) enligt principen sist in fÃ¶rst ut
 <ul>
 <pre>
 push	reg16		push	Ax
@@ -50,7 +50,7 @@ push	segreg		push	Ds
 </pre>
 </ul>
 <h3>POP</h3>
-Hämtar ett värde från stacken (alltid 16 bitar) enligt principen sist in först ut
+HÃ¤mtar ett vÃ¤rde frÃ¥n stacken (alltid 16 bitar) enligt principen sist in fÃ¶rst ut
 <ul>
 <pre>
 pop	reg16		pop	Ds
@@ -68,19 +68,19 @@ xchg	reg,mem	xchg	Ch,Tal1
 </pre>
 </ul>
 <h3>IN</h3>
-Hämtar en byte eller ett word från en port till ackumulatorn (Ax eller Al)
+HÃ¤mtar en byte eller ett word frÃ¥n en port till ackumulatorn (Ax eller Al)
 <ul>
 <pre>
-in	accum,immed	in	Al,2FH	;hämta en byte från port 2f hexadecimalt
-in	accum,dx	in	Ax,dx	;hämta ett word från port med nummer i dx
-in	accum,dx	in	Al,dx	;hämta en byte från port med nummer i dx
+in	accum,immed	in	Al,2FH	;hÃ¤mta en byte frÃ¥n port 2f hexadecimalt
+in	accum,dx	in	Ax,dx	;hÃ¤mta ett word frÃ¥n port med nummer i dx
+in	accum,dx	in	Al,dx	;hÃ¤mta en byte frÃ¥n port med nummer i dx
 </pre>
 </ul>
 <h3>OUT</h3>
-Skickar en byte eller ett word från ackumulatorn till en port
+Skickar en byte eller ett word frÃ¥n ackumulatorn till en port
 <ul>
 <pre>
-out	immed,accum	out	5,Al	;skicka ut en byte från al till port 5
+out	immed,accum	out	5,Al	;skicka ut en byte frÃ¥n al till port 5
 out	dx,accum	out	dx,Al
 </pre>
 </ul>
@@ -89,7 +89,7 @@ out	dx,accum	out	dx,Al
 <h2>Aritmetiska instruktioner</h2>
 
 <h3>ADD</h3>
-Adderar operanderna, summan i första operanden
+Adderar operanderna, summan i fÃ¶rsta operanden
 <ul>
 <pre>
 add	reg,reg		add	Ax,Bx
@@ -101,7 +101,7 @@ add	mem,immed	add	Pris, 12
 </ul>
 
 <h3>SUB</h3>
-Subtraherar operanderna, differensen i första operanden
+Subtraherar operanderna, differensen i fÃ¶rsta operanden
 <ul>
 <pre>
 sub	reg,reg		sub	Dx,Ax
@@ -112,7 +112,7 @@ sub	mem,immed	sub	Tal1, 14
 </pre>
 </ul>
 <h3>INC</h3>
-Räkna upp (increase)
+RÃ¤kna upp (increase)
 <ul>
 <pre>
 inc	reg		inc	bh
@@ -120,7 +120,7 @@ inc	mem		inc	color
 </pre>
 </ul>
 <h3>DEC</h3>
-Räkna ned (decrease)
+RÃ¤kna ned (decrease)
 <ul>
 <pre>
 dec	reg		dec	Cx
@@ -128,7 +128,7 @@ dec	mem		dec	Pris
 </pre>
 </ul>
 <h3>NEG</h3>
-Negering (görs genom att ta 0 - operanden)
+Negering (gÃ¶rs genom att ta 0 - operanden)
 <ul>
 <pre>
 neg	reg		neg	dx
@@ -136,7 +136,7 @@ neg	mem		neg	delta_y
 </pre>
 </ul>
 <h3>CMP</h3>
-Jämför två operander, följs ofta av ett villkorligt hopp
+JÃ¤mfÃ¶r tvÃ¥ operander, fÃ¶ljs ofta av ett villkorligt hopp
 <ul>
 <pre>
 cmp	reg,reg		cmp	Si,Bx
@@ -147,25 +147,25 @@ cmp	mem,immed	cmp	Therese, 666
 </pre>
 </ul>
 <h3>MUL</h3>
-Utför multiplikation, Ax alltid en operand, resultatet i Ax (16 låga bitarna) 
-och Dx (16 höga) vid 8-bitars multiplikation, resultatet i Ax
+UtfÃ¶r multiplikation, Ax alltid en operand, resultatet i Ax (16 lÃ¥ga bitarna) 
+och Dx (16 hÃ¶ga) vid 8-bitars multiplikation, resultatet i Ax
 <ul>
 <pre>
 mul	reg		mul	Ch	;CH*AL, resultatet i Ax
-mul	reg		mul	Bx	;BX*AX, höga bitar i Dx, låga bitar i Ax (Dx:Ax)
-mul	mem		mul	Liston	;Liston*Al eller Ax beroende på om Liston är byte el. word
+mul	reg		mul	Bx	;BX*AX, hÃ¶ga bitar i Dx, lÃ¥ga bitar i Ax (Dx:Ax)
+mul	mem		mul	Liston	;Liston*Al eller Ax beroende pÃ¥ om Liston Ã¤r byte el. word
 </pre>
 </ul>
 <h3>DIV</h3>
-Utför division om 8-bitars divisor är Ax divident svar i Al, rest i Ah
-om 16-bitars divisor är Dx:Ax divident	svar i Ax, rest i Dx
+UtfÃ¶r division om 8-bitars divisor Ã¤r Ax divident svar i Al, rest i Ah
+om 16-bitars divisor Ã¤r Dx:Ax divident	svar i Ax, rest i Dx
 <ul>
 <pre>
 div	reg		div	Ch	;Ax/Ch, svar i Ax
 div	reg		div	Bx	;Dx:Ax/Bx, svar i Ax, rest i Dx
 div	mem		div	Size	;Ax/Size, byte storlek
 div	mem		div	Stor	;Dx:Ax/Stor, word storlek
-div	mem		div	[Bx]	;Dx:Ax/[Bx], word storlek, divisor är innehållet i ds:bx
+div	mem		div	[Bx]	;Dx:Ax/[Bx], word storlek, divisor Ã¤r innehÃ¥llet i ds:bx
 </pre>
 </ul>
 
@@ -181,29 +181,29 @@ not	mem		not	Dennis<br>
 </pre>
 </ul>
 <h3>AND</h3>
-Bitvist logiskt and, resultatet i första operanden
+Bitvist logiskt and, resultatet i fÃ¶rsta operanden
 <ul>
 <pre>
 and	reg,reg		and	Bx, Cx
 and	mem,reg	and	Summa, Al
 and	reg,mem	and	Dx, Maskord
-and	reg,immed	and	Ax, 3		;maska ut de två nedersta bitarna i Ax
+and	reg,immed	and	Ax, 3		;maska ut de tvÃ¥ nedersta bitarna i Ax
 and	mem,immed	and	Christine, 7	;maska ut de tre nedersta bitarna i Christine
 </pre>
 </ul>
 <h3>OR</h3>
-Bitvist logiskt or, resultatet i första operanden
+Bitvist logiskt or, resultatet i fÃ¶rsta operanden
 <ul>
 <pre>
 or	reg,reg		or	Dl, Dh
 or	mem,reg	or	Tomte, Cx
 or	reg,mem	or	Dx, Lennart
-or	reg,immed	or	Ax, 3		;Sätt de två nedersta bitarna i Ax
-or	mem,immed	or	Christine, 7	;Sätt de tre nedersta bitarna i Christine
+or	reg,immed	or	Ax, 3		;SÃ¤tt de tvÃ¥ nedersta bitarna i Ax
+or	mem,immed	or	Christine, 7	;SÃ¤tt de tre nedersta bitarna i Christine
 </pre>
 </ul>
 <h3>XOR</h3>
-Bitvist logiskt xor, resultatet i första operanden
+Bitvist logiskt xor, resultatet i fÃ¶rsta operanden
 <ul>
 <pre>
 xor	reg,reg		xor	Al, Bh
@@ -214,11 +214,11 @@ xor	mem,immed	xor	Alfons, 39H
 </pre>
 </ul>
 <h3>TEST</h3>
-Samma som AND, men ändrar inte destinationsoperanden. Används för att testa om vissa bitar är 
-satta (följs ofta av ett villkorligt hopp)
+Samma som AND, men Ã¤ndrar inte destinationsoperanden. AnvÃ¤nds fÃ¶r att testa om vissa bitar Ã¤r 
+satta (fÃ¶ljs ofta av ett villkorligt hopp)
 
 <h3>SHL/SHR</h3>
-Logiskt skift vänster (SHift Left) och höger (SHift Right)
+Logiskt skift vÃ¤nster (SHift Left) och hÃ¶ger (SHift Right)
 <ul>
 <pre>
 shl	reg,1		shl	Dl,1	;Samma sak som att multiplicera med 2
@@ -226,8 +226,8 @@ shr	reg,Cl		shr	Si,Cl	;Samma sak som att dela med (2^Cl)
 </pre>
 </ul>
 <h3>ROL/ROR/RCR/RCL</h3>
-roterar operanden (RCR och RCL roterar med föregående carry, inte så ofta 
-använda)
+roterar operanden (RCR och RCL roterar med fÃ¶regÃ¥ende carry, inte sÃ¥ ofta 
+anvÃ¤nda)
 <ul>
 <pre>
 rol	reg,1		rol	Bx,1
@@ -236,48 +236,48 @@ rcr	reg,cl		rcr	Ah,Cl
 </ul>
 
 <p>
-<h2>Strängmanipulerande instruktioner</h2>
+<h2>StrÃ¤ngmanipulerande instruktioner</h2>
 
 <h3>MOVSB/MOVSW</h3>
-Kopierar en byte resp ett word från den minnescell som pekas ut av ds:si till den 
-minnescell som pekas ut av es:di samt räknar upp si och di en byte med movsb och två byte (ett word) 
-med movsw. Kombineras med fördel med REP instruktionen
+Kopierar en byte resp ett word frÃ¥n den minnescell som pekas ut av ds:si till den 
+minnescell som pekas ut av es:di samt rÃ¤knar upp si och di en byte med movsb och tvÃ¥ byte (ett word) 
+med movsw. Kombineras med fÃ¶rdel med REP instruktionen
 <ul>
 <pre>
-movsb			;kopierar en byte från ds:si till es:di<br>
-rep	movsw		;kopierar Cx st word från ds:si till es:di<br>
+movsb			;kopierar en byte frÃ¥n ds:si till es:di<br>
+rep	movsw		;kopierar Cx st word frÃ¥n ds:si till es:di<br>
 </pre>
 </ul>
 <h3>LODSB/LODSW</h3>
-Kopierar en byte (lodsb) eller word (lodsw) från minnet till ackumlatorn. 
-Registerparet ds:si pekar på adressen i minnet där byten eller wordet finns. dessutom räknas si upp en 
-byte (lodsb) eller två byte (lodsw) så om man gör lodsb/lodsw en gång till så laddas nästa byte eller word i 
+Kopierar en byte (lodsb) eller word (lodsw) frÃ¥n minnet till ackumlatorn. 
+Registerparet ds:si pekar pÃ¥ adressen i minnet dÃ¤r byten eller wordet finns. dessutom rÃ¤knas si upp en 
+byte (lodsb) eller tvÃ¥ byte (lodsw) sÃ¥ om man gÃ¶r lodsb/lodsw en gÃ¥ng till sÃ¥ laddas nÃ¤sta byte eller word i 
 minnet till Ax. 
 
 <h3>STOSB/STOSW</h3>
-Kopierar en byte (stosb) eller word (stosw) från ackumulatorn till minnet. 
-Registerparet es:di pekar på adressen i minnet där byten eller wordet kommer att lagras. Dessutom 
-räknas di upp ett steg (stosb) eller två steg (stosw) så nästa gång man gör stosb/stosw lagras Ax till nästa 
-position i minnet. Kan kombineras med REP instruktionen som gör stos Cx antal ggr.
+Kopierar en byte (stosb) eller word (stosw) frÃ¥n ackumulatorn till minnet. 
+Registerparet es:di pekar pÃ¥ adressen i minnet dÃ¤r byten eller wordet kommer att lagras. Dessutom 
+rÃ¤knas di upp ett steg (stosb) eller tvÃ¥ steg (stosw) sÃ¥ nÃ¤sta gÃ¥ng man gÃ¶r stosb/stosw lagras Ax till nÃ¤sta 
+position i minnet. Kan kombineras med REP instruktionen som gÃ¶r stos Cx antal ggr.
 <ul>
 <pre>
-stosw			;kopierar ett word från Ax till minnescellen som es:di pekar på
-rep	stosb		;kopierar Cx antal bytes från AL till es:di
+stosw			;kopierar ett word frÃ¥n Ax till minnescellen som es:di pekar pÃ¥
+rep	stosb		;kopierar Cx antal bytes frÃ¥n AL till es:di
 </pre>
 </ul>
 
 <p>
-<h2>Flödeskontrollerande instruktioner</h2>
+<h2>FlÃ¶deskontrollerande instruktioner</h2>
 
 <h3>CALL</h3>
 Anropa en subrutin
 <h3>RET</h3>
-Återhopp från subrutin (avslutar en subrutin)
+Ã…terhopp frÃ¥n subrutin (avslutar en subrutin)
 
 <h3>JMP</h3>Ovillkorligt hopp (hoppar alltid)
 
-Villkorliga hopp utnyttjar Cf och Zf bitarna i FLAG - registret. Flag registret har vissa bitar som innehåller 
-information om föregående instruktion. Flag bitarna kallas:
+Villkorliga hopp utnyttjar Cf och Zf bitarna i FLAG - registret. Flag registret har vissa bitar som innehÃ¥ller 
+information om fÃ¶regÃ¥ende instruktion. Flag bitarna kallas:
 <br>
 FLAG bitar:
 <ul>
@@ -309,21 +309,21 @@ JC		Jump if Carry					cf = 1
 JNC		Jump if Not Carry				cf = 0
 </pre>
 </ul>
-Villkorliga hopp görs lämpligen efter en jämförelse (CMP) eller en aritmetisk instruktion (ADD, INC osv) 
-eller en Logisk instruktion (AND, XOR). Man klarar sig oftast med de två översta villkorliga hoppen JZ och 
-JNZ. Observera att många av instruktionerna hoppar vid samma tillfälle (betyder samma sak), se 
+Villkorliga hopp gÃ¶rs lÃ¤mpligen efter en jÃ¤mfÃ¶relse (CMP) eller en aritmetisk instruktion (ADD, INC osv) 
+eller en Logisk instruktion (AND, XOR). Man klarar sig oftast med de tvÃ¥ Ã¶versta villkorliga hoppen JZ och 
+JNZ. Observera att mÃ¥nga av instruktionerna hoppar vid samma tillfÃ¤lle (betyder samma sak), se 
 flaggvillkoren.
 <ul>
 <pre>
-Sub	Bl, Ah		;dra ifrån ah från bl
+Sub	Bl, Ah		;dra ifrÃ¥n ah frÃ¥n bl
 jnz	Kalle		;hoppa till labeln Kalle om resultatet ej blev noll
 	...
 Kalle:
 </pre>
 </ul>
 <h3>LOOP</h3>
-Kontrollerad upprepning. Loopar till en label. LOOP minskar CX med 1 och om resultatet ej är 0, 
-utförs hopp till labeln.
+Kontrollerad upprepning. Loopar till en label. LOOP minskar CX med 1 och om resultatet ej Ã¤r 0, 
+utfÃ¶rs hopp till labeln.
 <ul>
 <pre>
 	mov	Cx, 50	;ladda Cx med antal varv som loopen skall snurra
@@ -334,42 +334,42 @@ Dennis:	. . .
 </pre>
 </ul>
 <h3>Villkorliga loopar</h3>
-(jämför villkorliga hopp)
+(jÃ¤mfÃ¶r villkorliga hopp)
 
 <h3>LOOPE / LOOPZ</h3>
-Loopar till label om Cx inte är noll (som loop) och om zf = 1
+Loopar till label om Cx inte Ã¤r noll (som loop) och om zf = 1
 <h3>LOOPNE / LOOPNZ</h3>
-Loopar till label om Cx inte är noll och om zf = 0
+Loopar till label om Cx inte Ã¤r noll och om zf = 0
 
 <h3>INT</h3>
-Utför ett interrupt (avbrott)
+UtfÃ¶r ett interrupt (avbrott)
 <ul>
-<pre>int	immed		int 10h	;utför interrupt 10h</pre>
+<pre>int	immed		int 10h	;utfÃ¶r interrupt 10h</pre>
 </ul>
 <h3>IRET</h3>
-Återhopp från interrupt, används när man skriver egna avbrottsrutiner. Dessa fungerar ungefär 
-som subrutiner men kan utföras när som helst (tex när man rör tangentbordet, tangentbordsinterrupt).
+Ã…terhopp frÃ¥n interrupt, anvÃ¤nds nÃ¤r man skriver egna avbrottsrutiner. Dessa fungerar ungefÃ¤r 
+som subrutiner men kan utfÃ¶ras nÃ¤r som helst (tex nÃ¤r man rÃ¶r tangentbordet, tangentbordsinterrupt).
 
 <p>
 <h2>Processorkontrollerande instruktioner</h2>
 <pre>
 			Betydelse				     Flaggvillkor
 <ul>
-CLC	CLear Carryflag, nollställer cf i flaggregistret		cf = 0
-CLD	CLear Directionflag, riktning framåt vid t ex stos		df = 0
-CLI	CLear Interruptflag, tillåt inga interrupt			if = 0
+CLC	CLear Carryflag, nollstÃ¤ller cf i flaggregistret		cf = 0
+CLD	CLear Directionflag, riktning framÃ¥t vid t ex stos		df = 0
+CLI	CLear Interruptflag, tillÃ¥t inga interrupt			if = 0
 CMC	CoMplementera Carryflaggan					cf = NOT(cf)
-STC	SeT Carryflag, ettställer cf i flaggregistret			cf = 1
-STD	SeT Directonflag, riktning bakåt vid t ex movs			df = 1
-STI	SeT Interruptflag, tillåt avbrott				if = 1
-HLT	HaLT, processorn upphör utföra instruktioner
+STC	SeT Carryflag, ettstÃ¤ller cf i flaggregistret			cf = 1
+STD	SeT Directonflag, riktning bakÃ¥t vid t ex movs			df = 1
+STI	SeT Interruptflag, tillÃ¥t avbrott				if = 1
+HLT	HaLT, processorn upphÃ¶r utfÃ¶ra instruktioner
 </pre>
 </ul>
 
-Det var alla instruktioner som jag tycker är viktiga. Det finns massor till men man klarar sig utmärkt med de 
-här. Om du vill veta mer om de andra instruktionerna så gå till närmaste bibliotek eller internetanslutning 
-och fördjupa dig. Man behöver inte kunna alla instruktioner som finns i listan utantill, det är meningen att 
-listan skall fungera som en referens, men det är bra om man åtminstone läst igenom alla så man vet vad 
+Det var alla instruktioner som jag tycker Ã¤r viktiga. Det finns massor till men man klarar sig utmÃ¤rkt med de 
+hÃ¤r. Om du vill veta mer om de andra instruktionerna sÃ¥ gÃ¥ till nÃ¤rmaste bibliotek eller internetanslutning 
+och fÃ¶rdjupa dig. Man behÃ¶ver inte kunna alla instruktioner som finns i listan utantill, det Ã¤r meningen att 
+listan skall fungera som en referens, men det Ã¤r bra om man Ã¥tminstone lÃ¤st igenom alla sÃ¥ man vet vad 
 som finns.
 <p>
 950519 Albert Veli
