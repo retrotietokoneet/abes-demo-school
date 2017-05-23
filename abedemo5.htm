@@ -1,0 +1,226 @@
+<html>
+<head>
+<title> Demoschool Part V </title>
+</head>
+<body bgcolor="#FFFFFF" text="#666666">
+<p>
+<h2>Abe's Demoschool Part V</h2>
+<h3>lens and similar effects, color quantification</h3>
+<p>
+Welcome to part V of Abe's Demoschool. 
+<p>
+In Part 4 I said that this part would be about 3d vector graphics but
+I've changed my mind because I'm taking a course about 3d computer graphics
+in the spring of 1997 and I thought it would be best to wait with the 
+3d stuff until after that course so I'll be sure I'm not telling any lies.
+<p>
+Instead I'm going to write about some easier common demoeffects and I'll
+start with the <b>lens effect</b> and similar <b>transformations</b>. 
+A lens effect is when a picture is shown and it looks like a magnifying glass 
+is beeing drawn over the picture. One of the most famous demos that has a 
+lens effect is <b>2nd reality</b> by future crew. 
+The first time I saw this effect I was astonished and had no idea of how it 
+was done. Then somebody told me and I thought wow, this is really cool.
+<p>
+The trick is to <b>precalculate</b> the entire effect. 
+Just make an array that for each pixel in the destination picture tells 
+which pixel to take from the source picture. This array is called the 
+<b>transformation array</b>. The tricky part is to calculate the 
+transformation array to make the destination look like a lens is beeing 
+held over the source picture. I didn't come up with the algorithm myself, 
+I found it at <a href="ftp://x2ftp.oulu.fi/pub/msdos/programming">
+x2ftp.oulu.fi</a> somewhere.
+<p>
+<pre>
+        Pseudocode for lens transformation array:
+        (actually it's straight C-code)
+
+int tfm[D*D];   //The transformation array
+int M=10;        //Magnificationfactor
+int r,m,y,x,a,b;
+float s,z;
+r =D/2;         //D is the Diameter of the lens, I use 64
+s = sqrt(r*r - M*M);
+
+for(y = -r;y &lt; r;y++)
+{
+        for(x=-r;x &lt; r;x++)
+        {
+                if(x*x + y*y &gt; = s*s)
+                {
+                        a = x;
+                        b = y;
+                }
+                else
+                {
+                        z = sqrt(r*r - x*x - y*y);
+                        a = (x * M /(float)z + 0.5);
+                        b = (y * M /(float)z + 0.5);
+                }
+                tfm[(y + r)*D + (x + r)] = (b + r)*D + (a + r);
+        }
+}
+</pre>
+<p>
+actually the lens effect is kind of symmetric so it would be enough to
+loop halfway through x and y and reflect around the axes but it's easier to 
+loop through everything and it doesn't take very long time anyway.
+<p>
+Now when the hard part is done, the tfm array is calculated, just follow
+these simple steps:
+<pre>
+        1. <b>Save the background</b> of the D*D pixels rectangle at the 
+           coordinates where the lens effect will be applied.
+        
+        2. For each pixel in the destination rectangle, apply the color
+           from the appropriate pixel in the saved background. The <b>tfm</b>
+           array tells the offset into the saved background.
+        
+        3. <b>Restore</b> the original picture by drawing back the saved background.
+
+        4. Calculate new coordinates and goto 1.
+</pre>
+<p>
+On a slow computer the lens may <b>flicker</b> in the upper part of the screen.
+You can remove the flicker by using a <b>virtual screen</b> like in part 3 and 4 of 
+the demoschool. I left that part out to make the code smaller.
+There are already 4 files involved:
+<p>
+<ul>
+<li>    <b>abedemo5.c</b>      This is the main program.
+<li>    <b>mklens.c</b>        Calculates the tfm array.
+<li>    <b>viewtga.c</b>       Used to show the background image.
+<li>    <b>lens.asm</b>        Routines for steps 1, 2 and 3 in the algorithm above.
+</ul>
+<p>
+Abedemo5.c #includes mklens.c and viewtga.c.
+Compile everything with: 
+<ul>
+<li> bcc -1 abedemo5.c lens.asm
+</ul>
+<p>
+If you change the tfm array, the entire effect changes. Here are some cool
+transformations (D is both width and height):
+<p>
+<b>Invert</b> area (flip in both x- and y-directions):
+<pre>
+        for(i=0;i &lt; D*D;i++) tfm[D*D-i-1]=i;
+</pre>
+<p>
+<b>Flip</b> area in <b>x-direction</b>:
+<pre>        
+        for(i=0;i &lt; D;i++)
+        {
+                for(j=0;j &lt; D;j++)
+                tfm[i*D+j] = i*D + D-1 - j;
+        }
+</pre>
+<p>
+<b>Flip</b> area in <b>y-direction</b>:
+<pre>        
+        for(i=0;i &lt; D;i++)
+        {
+                for(j=0;j &lt; D;j++)
+                tfm[j*D+i] = (D-1-j)*D + i;
+        }
+</pre>
+<p>
+<b>Magnify</b> upper left corner of area:
+<pre>
+int MAG=2;      //magnificationfactor
+        for(i=0;i &lt; D;i++)
+        {
+                for(j=0;j &lt; D;j++)
+                tfm[i*D+j] = (i/MAG)*D + (j/MAG);
+        }
+</pre>
+<p>
+All these transformations are included in <b>mklens.c</b>. You can probably think
+of more transformations like exchanging the upper left corner, the
+lower right corner, the upper right corner and the lower left corner with
+each other or perhaps make it look like a letter or a logo of glass is held
+over the image. Just use your imagination (and a lot of math if you're trying
+the logo of glass thing).
+<p>
+If you examine the lens effect in 2nd reality you see that the lens also
+changes the color of the source image and gives it a slightly bluish touch.
+This can be done by drawing the image with, say, colors 0 to 63. Then let 
+colors 64 to 127 be copies of colors 0 to 63 but a little bluish and 128 to 
+191 more bluish and 192 to 255 most bluish. Then make a second array, the 
+same size as the transformation array. But let this one have numbers 0, 1, 2 
+or 3. 0 means don't change the color, 1 means add 64, 2 means add 128 and 
+3 means add 192. The tfm array and the color-filter array have to be matched
+to make the effects look good together.
+<p>
+To help you get going I wrote a <b>color quantifying</b> program,
+<b>quant.c</b>. 
+It takes a 256-color tga image and converts it to 64 colors. 
+The rest of the colors in the palette are copies but in rising shades of blue.
+I also added functions to make <b>green shades</b> and <b>fog shades</b>. 
+Fog shades are good for simulating ... fog. The further away an object is, 
+the more fog shade. It's easy and fast, even doom uses similar techniques 
+only the opposite, the further away, the darker. You could easily change the 
+green shades to dark shades to get the same effect.
+<p>
+I once saw an <b>animated cursor</b> on the Amiga where the mouse cursor had a small 
+magnifying glass with the center at the hot spot (the active place when you 
+click). After this you should be able to do a similar animated cursor in mode
+13h on the PC. This looks really cool if you ever make a program where the 
+mouse is used. It looks even cooler if you first draw a sprite of the 
+magnifying glass and leave a hole where the glass is. Then apply the lens 
+effect at the coordinates of the hole. If you also add the color filter
+dicussed above the effect would be outstanding. Again, use your imagination.
+<p>
+The source code is pretty easy to follow, the routines in <b>lens.asm</b> is very
+similar to the <b>sprite</b> routines in part 3 of the demoschool. The only 
+difference is the tfm array and that the routines don't use a virtual screen. 
+You can easily <b>add a virtual screen</b>, just peek at graph.asm from
+demo 4.
+<p>
+If you're using Borland C, compile quant.c with: <ul><li>bcc -1 quant.c</ul>
+and abedemo5.c with <ul><li>bcc -1 abedemo5.c lens.asm or run build.bat</ul>.
+Have all the files in the same directory.
+<p>
+The tga image, <b>boris.tga</b> is a part of a Boris Vallejo painting I think.
+I don't remember where I got it from but change .tga image if you don't like
+it. If you don't manage to compile abedemo5 you can still change .tga image.
+Just name your image boris.tga and put it in the same directory as 
+abedemo5.exe.
+
+download <a href="abedemo5.zip">abedemo5.zip</a> 
+which contains the source codes and <a href="demo5exe.zip">
+demo5exe.zip</a> for the executables if you fail to compile. <b>Unzip</b> the executables 
+into the <b>same directory as the files from abedemo5.zip</b>.
+<p>
+2nd reality and a LOT of other demos can be downloaded from:
+<a href="ftp://ftp.luth.se/pub/msdos/demos/demos">ftp.luth.se</a>.
+<p>
+Lookout for more demoeffects in part VI that will be available soon.
+<p>
+<hr>
+<p>
+<pre>
+/Abe Racadabra, October 1996
+
+s-mail: Albert Veli
+        Spisringsg. 9
+        S-724 76 V&aumlster;&arings;
+        SWEDEN
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@bilbo.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+<p>
+<hr>
+<p>
+<i>
+<b>Copyleft:</b><br>
+You are free to do whatever you like with the code of the parts of the
+demoschool. If you spread them please don't change anything unless it's an
+improvement (that works). Use the code in your own programs if you want but 
+remember that the code is not 100% optimized.
+</i>
+<p>
+Back to the <a href="./">Demoschool</a>.
+</body>
+</html>

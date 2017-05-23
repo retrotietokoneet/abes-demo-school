@@ -1,0 +1,252 @@
+<html>
+<head><title>SVGA putpixel update</title></head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000EE" vlink="#7F007F" alink="#00FF00">
+<p>
+<h2>Abe's bag of tricks #2</h2>
+<h3>Working SVGA Putpixel, VESA detection</h3>
+<p>
+Hello again dear coders and welcome to the second trick in Abe's bag
+of tricks. The demoschool have been closed for the summer because I've
+been working, but now I'm back in school. That means more demoschool
+parts and more tricks in the bag. Isn't it wonderful to study and have
+all this time left over to code...
+<p>
+I have received a lot of letters about the <b>SVGA putpixel routine</b>.
+It only works on some cards. The problem is the <b>bankswitch routine</b>.
+The last time I said that you should put the banknumber*16 in dx
+before calling the bankswitch interrupt. That is not true for all cards.
+You should put <b>banknumber*(winsize/granularity)</b> in dx. On my card the granularity happens to be 4k and the winsize is always 64k for 256 
+color modes. That makes (winsize/granularity) = 16. Other cards have
+granularity 64k, then (winsize/granularity) is 1, and you should only
+put the banknumber in dx.
+<p>
+To make the same code work on ALL vesa compatible cards you have to get
+information about the winsize and granularity. VESA has provided an interrupt
+call that gives this info and much more about all available modes. 
+Actually it's 2 interrupt calls. One call gives info about if VESA is available
+and if it is, which modes are available. The other call gives info about
+one of the available modes, for example 640*480*256 (mode 101h).
+<p>
+Before making the interrupt calls you have to define structs to hold the
+information. The struct for the first call looks like this:
+<p>
+<pre>
+typedef struct {
+        char signature[4];      //VESA
+        short version;          //VESA version
+        char far *oem;          //Name of the card
+        long capabilities;
+        unsigned far *videomodes; //pointer to available modes
+        short totalmemory;
+        char reserved[236];
+} vesaInfo;
+</pre>
+<p>
+and to fill a vesaInfo struct with information use this function:
+<p>
+<pre>
+int getVesaInfo(vesaInfo far *vesainfo)
+{
+ asm    mov ax,04f00h           //ax = 0x4f00
+ asm    les di, [vesainfo]      //es:di -&gt; vesainfo
+ asm    int 10h                 //call interrupt and get vesainfo
+ asm    cmp ax,4fh              //if ax is 0x4f then vesa is detected
+ asm    jz done
+ return(0);                     //if not, return 0 (no vesa card)
+done:
+ return(1);             //successful, return 1
+}
+</pre>
+<p>
+Now to get info about the card just declare a vesaInfo struct and call the
+function:
+<p>
+<pre>
+        vesaInfo vesainfo;
+        if(getVesaInfo(&vesainfo;)==1) printf("VESA detected\n");
+        else printf("Sorry, no VESA detected\n");
+</pre>
+<p>
+Now you have determined if VESA is available and filled the
+<b>vesainfo</b> struct. The most important information is in <b>vesainfo.videomodes</b>. If you look at the struct you see that it has the type unsigned far*. To step through all available 
+video modes, first declare a pointer with the same type:
+<p>
+<pre>
+        unsigned far *mode;
+</pre>
+<p>
+then loop through all available modes (they end with -1):
+<p>
+<pre>
+        for( mode = vesainfo.videomodes ; *mode != (unsigned)-1 ; mode++ )
+        printf("Mode %Xh detected\n",*mode);
+</pre>
+<p>
+Now you have printed all available VESA modes on the screen. But we want
+more. Remember the bankswitch problem? We have to get more information
+about each mode. This is done with the <b>getModeInfo</b> VESA interrupt call. Before making the call you have to declare a modeInfo struct:
+<p>
+<pre>
+typedef struct {
+        unsigned short mode;
+        unsigned char  wina;
+        unsigned char  winb;
+        unsigned short granularity;     //granularity and winsize are
+        unsigned short winsize;         //used to calculate the bankshift
+        unsigned short winasegment;
+        unsigned short winbsegment;
+        void (far *bankSwitch)(void);   //bankswitch function
+        unsigned short bytesperline;
+        unsigned short width;           //width and
+        unsigned short height;          //height of the mode
+        unsigned char  charwidth;
+        unsigned char  charheight;
+        unsigned char  bitplanes;
+        unsigned char  bitsperpixel;    //if this is 8 then it's 256 colors
+        unsigned char  banks;
+        unsigned char  memorymodel;
+        unsigned char  banksize;
+        unsigned char  imagepages;
+        unsigned char  reserved1;
+        unsigned char  redmasksize;
+        unsigned char  redfieldposition;
+        unsigned char  greenmasksize;
+        unsigned char  greenfieldposition;
+        unsigned char  bluemasksize;
+        unsigned char  bluefieldposition;
+        unsigned char  rsvdmasksize;
+        unsigned char  rsvdfieldposition;
+        unsigned char  directcolormode;
+        unsigned char  reserved2[216];
+} modeInfo;
+</pre>
+<p>
+As you can see there is a lot of information about the modes. The most
+important fields are the <b>winsize, granularity, width, height</b> and <b>bitsperpixel</b> fields. Another interesting field is the <b>bankSwitch</b> field. You might not be familliar with function pointers but it is a pointer to a function that switches
+
+
+
+
+
+ bank, perfect. Now we don't have to use the slow VESA bankswitch interrupt to switch bank. We can call the provided bankswitch routine directly.
+<p>
+To fill in a modeInfo struct, first decide wich mode to get info about
+and then call this function:
+<p>
+<pre>
+int getVesaModeInfo(int mode, modeInfo far *modeinfo)
+{
+ asm    mov ax,4f01h
+ asm    mov cx,[mode]           //mode in cx
+ asm    les di,[modeinfo]       //es:di -&gt; modeinfo
+ asm    int 10h                 //and get the info
+ return (modeinfo-&gt;mode &amp; 1); //return 1 if succesful, else 0
+}
+</pre>
+<p>
+If mode is one of the detected modes then this function should return 1 
+and the modeinfo struct is filled with info about the mode.
+Else, if a non supported mode is chosen, it returns 0.
+<p>
+Now we have all needed info about the mode. <b>(winsize/granularity)</b> is always a <b>power of 2</b>. That means that instead of multiplying you can use <b>left shifts</b> to multiply the banknumber. I made a global variable, bankshift, 
+that contains the number of steps to shift dx. 
+Banksift is calculated like this:
+<p>
+<pre>
+        i = modeinfo.winsize/modeinfo.granularity;
+        switch(i)
+        {
+                case 1: bankshift=0; break;
+                case 2: bankshift=1; break;
+                case 4: bankshift=2; break;
+                case 8: bankshift=3; break;
+                case 16: bankshift=4; break;
+                case 32: bankshift=5; break;
+                case 64: bankshift=6; break;
+                default: bankshift=0; //this should not happen...
+        }
+</pre>
+<p>
+You can define a global bankswitch function pointer like this:
+<p>
+<pre>
+        void (far *switchBank)(void);
+</pre>
+<p>
+Then after making the getModeInfo call, set the functionpointer:
+<p>
+<pre>
+        switchBank = modeinfo.bankSwitch;
+</pre>
+<p>
+Now finally we're done. To switch bank: <b>clear bx, put the desired banknumber
+in dx, multiply with (winsize/granularity) and call switchBank();</b>
+<p>
+<pre>
+        asm     mov bx,0        //clear bx
+        asm     mov dx,[bank]   //move desired bank to dx
+        asm     mov cx,[bankshift] //the number of bits to shift to cx
+        asm     shl dx,cl       //and shift
+        switchBank();           //call the provided bankswitch routine.
+</pre>
+<p>
+This really should work for ALL VESA compatible cards.
+It might seem like a lot of work to detect modes and to get modeinfo but
+you just have to put the code in an initialisation routine and then use
+the same init routine every time.
+<p>
+In my init-routine I also put in a putpixel function pointer.
+First there is a global putpixel pointer:
+<p>
+<pre>
+        void (*putpixel)(int x,int y,char color);
+</pre>
+<p>
+Then I made 2 putpixel routines, one for mode 13h and one for 256 color
+vesa modes. If mode 13h is chosen then
+<p>
+<pre>
+        putpixel = putpixel_13h;
+else
+        putpixel = putpixel_SVGA_256;
+</pre>
+<p>
+There also are global variables that tells the screen width and screen height.
+The rest of the code is totally <b>unaware of which mode is chosen</b>. It only
+uses the <b>putpixel</b> routine and the <b>screen width and height</b> variables. It's the init routine that sets everything up.
+<p>
+There are 2 C-programs to show you how things work. The first is called
+<b>detect.c</b> and it only detects witch modes are available and then prints
+information about the available modes. The second is called <b>vesabase.c</b>
+and it lists all available 256-color modes (including mode 13h) and let 
+you choose one of them. Then it draws a simple pattern over the screen in 
+the selected mode. The program is only a <b>base that you can build your own 
+code upon</b>. All 256-color modes work the same way with the colors so you 
+can use the <b>palette routines</b> from the demoschool part 1 &amp; 2 in any VESA mode: <b>coolpal, fade in and out, rotate palette</b> and so on.
+<p>
+I thank everybody who has sent me e-mail about the problems with the 
+bankswitch routine and about the possible solutions. A mail from 
+<b>Maurice van der Pot</b> finally gave me the working solution and then 
+I also got a lot of help from the VESA library found <a href="graphics.txt">HERE</a>.
+<p>
+download <a href="bag2.zip">bag2.zip</a>
+<p>
+<hr>
+<p>
+Happy VESA Hacking
+<p>
+<pre>
+September 1996 Abe Racadabra
+
+s-mail: Albert Veli
+        Spisringsg. 9
+        SE-724 76 V&aumlster;&arings;
+        SWEDEN
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@bilbo.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+<br>
+Back to <a href="http://www.mds.mdh.se/föreningar/small/abe/">The
+demoschool</a>.
+</body></html>

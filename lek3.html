@@ -1,0 +1,288 @@
+<html>
+<head>
+<title>falling letters</title>
+</head>
+<body>
+<h2>Albert's assemblerskola</h2>
+<h4>Lektion 3, fallande bokstäver</h4>
+<hr>
+Dags för lektion 3 i assemblerskolan.
+Den här gången tänkte jag göra ett helt program som använder sig av det jag
+gick igenom i lektion 1 och 2, samt även lite nytt.
+<p>
+Programmet skall flytta ned bokstäverna på skärmen slumpmässigt (nästan).
+Det sker genom att slumpa fram en x-koordinat och flytta ned det nedersta
+tecknet i kolumn x ett steg. Sedan slumpas en x-koordinat till, nedersta 
+tecknet flyttas ned o.s.v tills någon tangent trycks ned.
+Detta blir en intressant effekt som kan användas t ex till skrämma någon till 
+att tro att han/hon har fått ett virus i datorn (FY! det var inte snällt &lt;;}).
+Effekten förstärks genom att tända och släcka num-lock, scroll-lock och caps-
+lock dioderna på tangentbordet.
+<p>
+Skärmen, i textläge 3, har 25 rader och 80 kolumner. Det gör att x-koordinaten 
+kan varieras mellan 0 - 79.
+Slumpningen har jag fuskat litet med. Jag har slumpat fram 160 tal mellan 0 -79
+i ett c program. Sedan gjorde jag cut 'n paste in i assembler-koden. Det 
+viktigaste är att varje tal mellan 0 - 79 återkommer minst en gång, vilket det
+gör (efter lite trixande i c-koden). C-koden består i huvudsak av raden:
+x_koord = rand()%80;
+vilket slumpar fram ett tal mellan 0 och 79. Det går att ha mer än 160 tal i
+"slump"-tals följden. Skillnaden blir att det då tar längre tid innan mönstret
+upprepar sig, men jag tyckte att 160 tal får räcka.
+<p>
+Programmet har två subrutiner. En subrutin i assembler fungerar ungefär som
+en funktion i C eller en Procedur i Pascal. Dvs det är ett underprogram som
+kan anropas från huvudprogrammet. Anropet sker med instruktionen CALL. När
+instruktionen CALL utförs hoppar programräknaren till den label som anges efter
+CALL och kör ända tills instruktionen ret påträffas. Då hoppar programräknaren
+tillbaka till huvudprogrammet och fortsätter med instruktionen efter CALL.
+En subrutin avslutas alltså av en RET instruktion. Det går också att göra sub-
+rutinerna som procedurer, dessa fungerar ungefär likadant, men dem tar jag en 
+annan gång.
+<p>
+I programmet finns det tre subrutiner:
+wtsync, flyttaner och rotlight.
+<p>
+Wtsync väntar på att elektron-strålen ska rita klart bilden. Genom att vänta
+på elektron strålen innan man ritar ut någonting, undviker man att bilden
+flimmrar. Om datorn är för långsam och/eller koden för långsam, flimmrar
+bilden i alla fall. Det är därför de flesta grafikrutiner skrivs i assembler.
+Då blir de oftast så snabba att bilden inte flimrar utan blir klar och skarp.
+<p>
+Flyttaner, tar en x-koordinat i al och flyttar ned det första tecknet som inte
+är mellanslag en rad. Sökningen börjar på rad 24, tecken x. Sen söker rutinen
+uppåt tills den hittar en rad som inte innehåller mellanslag på plats x.
+X är som sagt en byte mellan 0 och 79. Om inget tecken påträffats när rutinen
+kommit till rad 0, avbryts rutinen (vi vill inte att rutinen ska leta någon
+annanstans än i skärmminnet).
+<p>
+Rotlight tar en byte i variabeln light, roterar light ett steg åt vänster.
+Caps-lock motsvaras av bit nr 6 i light, num-lock bit 5 och scroll-lock bit 4.
+Genom att ge variabeln light olika värden, ändras mönstret som dioderna kommer
+att blinka med. Om respektive bit är noll, släcks dioden och om biten är 1 så
+tänds dioden.
+Light deklareras som en byte i datasegmentet.
+Rand, som är "slump"-talen, deklareras som 160 bytes i datasegmentet.
+Datasegmentet är det område som börjar med .Data i koden.
+<p>
+Att tända och släcka dioderna sker genom att ändra i BIOS-data-area på adress
+40:17 som innehåller tangentbordsstatus.
+<pre>
+40:17 i BIOS dataarea:
+Bit
+0   right shift key depressed
+1   left shift key depressed
+2   CTRL depressed
+3   ALT depressed
+4   SCROLL-lock active
+5   NUM-lock active
+6   CAPS-lock active
+7   INSERT state active
+</pre>
+Observera att 40 och 17 är Hex-tal. Genom att ändra bit 4,5 och 6 på adress
+40:17 hex, ändrar man alltså scroll, num och caps-lock statusen. Dioderna på
+tangentbordet kommer att blinka.
+<p>
+Int 16h innehåller en massa funktioner rörande tangentbordet. Interrupt 16h
+anropas med ett funktionsnummer i ah. De funktioner som det hät programmet 
+använder sig av är 0 och 1. Int 16 funk 0, väntar på en tangenttryckning och 
+returnerar ascii-koden för den nedtryckta tangenten i al (och scan-koden i ah).
+Funktion 1 kollar bara om någon tangent tryckts ned, men förändrar inte bufferten.
+Funktion 0 tar ett tecken från bufferten om det finns.
+Tangentbords-bufferten lagrar ett antal knapptryckningar om man trycker på
+fler knappar än programmet hinner läsa av.
+<p>
+Det finns inte så mycket mer att säga, koden är ganska välkommenterad och 
+förklarar sig själv (förhoppningsvis).
+Provkör programmet och försök förstå hur det fungerar. Ändra sedan i koden,
+kompilera om och provkör igen. Fungerar det som det ska? Det som är lättast
+att ändra på är värdet som light variabeln har. Genom att ändra den kommer
+dioderna att blinka med andra mönster.
+<p>
+<pre>
+--------------------------------- Klipp här ----------------------------------
+
+DOSSEG          ;dossegment
+.MODEL SMALL    ;använd minnesmodell small
+.STACK 100h     ;stack på 256 bytes (onödigt stort för det här programmet)
+.DATA           ;datasegmentet
+rand    db      26, 50, 22, 29, 56, 77, 75, 15, 68, 6, 44, 78, 51, 79, 12, 0, 52, 1, 63, 7
+	db      79, 1, 70, 65, 14, 69, 12, 11, 59, 56, 1, 51, 75, 73, 54, 30, 59, 75, 41, 12
+	db      9, 8, 66, 24, 52, 23, 46, 4, 39, 31, 27, 20, 35, 12, 34, 26, 27, 2, 14, 49
+	db      69, 63, 66, 61, 30, 38, 45, 19, 30, 73, 53, 69, 45, 22, 13, 17, 36, 37, 60, 58
+	db      56, 0, 42, 22, 67, 35, 76, 58, 36, 39, 48, 19, 41, 57, 75, 21, 62, 0, 50, 41
+	db      57, 15, 23, 67, 72, 71, 53, 33, 74, 32, 46, 58, 46, 10, 4, 54, 71, 79, 6, 10
+	db      64, 11, 12, 55, 63, 46, 4, 20, 8, 64, 79, 8, 5, 6, 55, 60, 3, 20, 18, 16
+	db      47, 4, 28, 60, 33, 5, 49, 43, 40, 72, 25, 51, 39, 22, 24, 71, 0, 70, 21, 16
+light   db      1
+
+.CODE                   ;kod segment
+.286                    ;tillåt 286-specifika instruktioner
+START:                  ;här börjar koden
+	
+	mov     ax,@data        ;flytta datasegmentets adress till ax 
+	mov     ds,ax           ;låt ds peka på början av datasegmentet
+	mov     ax,0b800h       ;flytta skärmminnets adress till ax
+	mov     es,ax           ;skärmminnet till es
+main1:        
+	mov     cx,160          ;rand är 160 bytes stort, cx är loopräknare
+				;för hur många varv programmet ska snurra innan
+				;programmet börjar om på början av rand
+	lea     si,rand         ;si är offseten till vilket tal i rand som ska hämtas
+main:                       	;huvudloop
+	call    wtsync          ;vänta på elektronstrålen
+	lodsb                   ;hämta en byte från ds:si till al
+	call    flyttaner       ;flytta nedersta tecknet i kolumn al
+	mov     al,cl           ;liten fördröjning för att dioderna inte ska
+	and     al,3            ;blinka så fort
+	jnz     norot           ;om cl/4 = 0 annars fortsätt vid norot
+	call    rotlight        ;rotera light och ändra dioderna
+norot:  mov     ah,1        	;int 16h funktion 1
+	int     16h             ;kollar om någon tangent tryckts ned
+	jnz     slut            ;om det har det avsluta
+	loop    main            ;annars loopa tillbaka till main
+	cmp     light,1         ;hit kommer programmet efter 160 nedflyttningar
+	je      is1             ;då byter light värde, om light är 1
+	mov     light,1         ;så tilldelas light 15
+	jmp     main1           ;annars om light inte var ett så blir det ett
+is1:    mov     light,15
+	jmp     main1
+	
+slut:   mov     ah,0		;ta bort knapptryckningen från keybords-bufferten
+	int     16h		;om man struntar i det här skrivs det nedtryckta
+				;tecknet ut på skärmen när programmet avslutas
+				;prova att kommentera bort mov ah,0 och int 16h
+	
+	mov     ax,4c00h        ;hoppa tillbaka till dos
+	int     21h             ;programmet krashar utan dessa 2 rader!
+
+
+;****************************************************************************
+;***************** S * U * B * R * U * T * I * N * E * R ********************
+;****************************************************************************
+rotlight:
+	push    ds      ;spara undan ds, es, ax, si, di på stacken under
+	push    es      ;subrutinen
+	push    ax
+	push    si
+	push    di
+	
+	rol     light,1         ;rotera light ett steg åt vänster
+	mov     bl,light        ;flytta innehållet i light till bl
+	mov     ax,40h          ;flytta 40h till ax
+	mov     es,ax           ;och till es (mov es,40h direkt går inte)
+	mov     ds,ax           ;flytta 40h även till ds
+	mov     si,17h          ;flytta 17h till si och di
+	mov     di,17h          ;diod-statusen är på adress 40h:17h
+	
+	lodsb                   ;ladda byten på adress 40h:17h till AL
+	or      bl,8Fh          ;sätt alla bitar utom bit 4, 5 och 6 till 1 i bl
+	and     al,bl           ;sätt de bitar som är 0 i bl till 0 i al
+	and     bl,70h          ;nollställ alla bitar utom 4, 5 och 6 i bl
+	or      al,bl           ;sätt de bitar som är 1 i bl till 1 i al
+	stosb                   ;skriv tillbaka al till 40h:17h
+
+	pop     di      ;hämta tillbaka di,si,ax,es,ds från stacken
+	pop     si
+	pop     ax
+	pop     es
+	pop     ds
+	ret             ;hoppa tillbaka från subrutinen
+
+wtsync:             ;vänta på att elektronstrålen ska rita klart skärmen
+	mov     dx,3DAh
+WaitVR1:
+	in      al,dx
+	test    al,8
+	jne     WaitVR1
+WaitVR2:
+	in      al,dx
+	test    al,8
+	je      WaitVR2
+	ret         ;hoppa tillbaka från wtsync till huvudprogrammet
+
+flyttaner:          ;tar en x-koordinat i al
+	push    ds      ;spara undan ds, di, si, ax på stacken
+	push    di
+	push    si
+	push    ax
+	mov     si,4000		;skärmen 4000 bytes stor (25*80*2 = 4000)
+				;ds:si = första byten efter skärmen
+	xor     ah,ah       ;nollställ ah
+	shl     ax,1        ;ax = ax*2, en rad = 80 tecken = 160 bytes
+	add     si,ax       ;addera si med ax
+	push    es          ;=&gt; ds:si = tecken på kolumn x, en rad under understa raden
+	pop     ds          ;låt ds bli lika med es
+flyttloop:
+	sub     si,160          ;skärmen 160 bytes bred, ds:si = upp en rad
+	cmp     si,160          ;jämför om ds:si ligger på översta raden
+	jle     hittat          ;om översta raden avbryt
+	lodsb                   ;annars hämta tecknet vid ds:si till al
+	dec     si              ;lodsb ökar si med 1 så vi minskar si med 1 igen
+	cmp     al,32           ;om det hämtade tecknet var mellanslag
+	je      flyttloop       ;så hoppa till raden ovanför och titta
+				
+hittat:                     ;annars om hittat tecken
+	mov     di,si           ;låt di = si
+	add     di,160          ;di=raden rakt under si
+	movsb                   ;flytta ner tecknet från ds:si till es:di
+	dec     si              ;movsb ökar si och di med 1 så vi minskar si med 1
+	mov     di,si           ;låt di = si
+	mov     al,32           ;flytta koden för mellanslag (32) till al
+	stosb                   ;sudda ut tecknets gamla position
+	pop     ax      ;hämta tillbaka ax, si, di, ds från stacken
+	pop     si
+	pop     di
+	pop     ds
+	ret         ;hoppa tillbaka från subrutinen
+
+END START
+
+--------------------------------- Klipp här ----------------------------------
+</pre>
+Det var hela programmet, jag gjorde även samma program med inline assembler
+i C och det blev 11 kb stort, i assembler blev det 0,9 kb stort, hyfsad skillnad
+tycker jag. Ett starkt skäl till att programmera i assembler alltså.
+<p>
+En effekt som kan ge ännu mer virus-känsla över programmet är hårddisktugg.
+Det kan åstadkommas genom att skapa, läsa och radera massa filer om och om 
+igen. Filerna behöver bara innehålla skräp, det är det tuggande ljudet
+som ger en känsla av att hela hårddisken håller på att formatteras om.
+Inte särskilt snällt, men tänk vilken omväxling i folks kanske lite grå-trista
+vardag att plötsligt se tecknen på skärmen börja falla ner, ackompanjerat av
+monotona hårdisktugg och blinkande tangentbord. Vilken förtvivlan som väcks och
+till slut vilken glädje och harmoni som infinner sig när den drabbade personen
+inser att ingen information gått förlorad på hårddisken, och att det inte var
+något virus.
+Programmet kan utge sig för att göra något helt annat en s.k. trojansk häst,
+och sedan börja flippa ur. Modifiera gärna friskt, byt ut stora bokstäver mot
+små och låt fantasin flöda.
+<p>
+Det här programmet är ingen direkt ny idé, men jag tyckte det passade fint
+in i assembler-skolan som avslutning på text-delen. Idén fick jag av 
+<a href="http://www.mds.mdh.se/~frv95pen/">Per Eriksson</a>.
+I fortsättningen kommer det att handla om olika grafiklägen, mestadels läge 13h.
+Det är i läge 13h de flesta PC-demos är skrivna i. Jag har till och med
+funderat paa att låta assembler-skolan byta namn till demo-skolan från och med
+del 4.
+<p>
+<hr>
+<p>
+/Ge inte upp
+<pre>
+Abe of small 
+
+s-mail: Albert Veli
+	Spisringsg. 9
+	724 76 Västerås
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@idt.mdh.se">dat94avi@idt.mdh.se</a>.
+</address>
+<br>
+Om du aer intresserad, kolla in <a href="http://www.mds.mdh.se/~dat94avi/">min hemsida</a>. <p>
+PS<br>
+<a href="http://www.mds.mdh.se/föreningar/small/">small</a> har fortvarande 
+inte gjort nåt demo men vi funderar på det :)<br> DS
+</body>
+</html>

@@ -1,0 +1,243 @@
+<html>
+<head>
+<title>'first time, wow!?, what's this?'</title>
+</head>
+<body>
+<h2>Albert's Assemblerskola</h2>
+<h4>Lektion 1, att skriva ett meddelande.</h4>
+<hr size="2">
+Hej och välkommen till det första programmet. Jag har kört på med programmet
+först och förklaringarna efteråt. För att kunna köra det här måste man ha
+en assembler, den vanligaste är TurboASseMbler (TASM). I TASM kan man köra
+med förenklade segment vilket jag har gjort. Detta innebär att programmet
+måste assembleras med TASM. Om du inte har TASM "FIXA DET". Eller kör
+med inline assembler i Pascal eller C (vilket jag också kommer att göra
+från och med program 2 eller 3).
+<br>
+Gör så här:
+<ul>
+        1.      KLIPP UT själva programmet ur den här texten<br>
+        2.      SPARA som NAMN.ASM (ändelsen .asm är viktig)<br>
+        3.      ASSEMBLERA genom att skriva TASM NAMN <return><br>
+        4.      LÄNKA med TLINK NAMN <return><br>
+        5.      KÖR med NAMN <return><br>
+ </ul>
+------------------------------- KLIPP HÄR -----------------------------------
+<pre>
+;**************************************************************************** 
+;***                              prog1.asm                               *** 
+;***                        Det första programmet:                        *** 
+;***                           Att skriva ut ett                          *** 
+;***                        meddelande på skärmen                         *** 
+;***                            i ASSEMBLER!!!                            *** 
+;**************************************************************************** 
+<br>
+DOSSEG                  ;Dela upp minnet i segment precis som dos gör
+<br>
+.MODEL SMALL            ;välj vilken minnesmodell programmet ska ha
+<br>
+.STACK 100h              ;definiera en stack på 256 bytes (100 hex)
+<br>
+.DATA                   ;Här börjar datasegmentet
+                        ;(deklarera variabler, strängar m.m.)
+<p>
+message db      'Denna text kommer från ett assemblerprogram!',13,10
+        db      'Känns det lika skönt för dej som för mej?',13,10
+        db      'Moralisk stödperson:',13,10
+        db      '***  Abeman  babebeard  ***',13,10
+        db      'e-mail: dat94avi@idt.mdh.se',13,10,'$'
+<br>
+.CODE                   ;kod segment
+<br>
+START:                  ;start är en label som markerar en plats i minnet
+<ul>
+        mov     ax,@data        ;flytta datasegmentets adress till ax
+        mov     ds,ax           ;låt ds peka på början av datasegmentet
+                                
+        mov     ah,09           ;flytta talet 9 till ah
+        mov     dx,offset message  ;flytta message's offset till dx
+        int     21h             ;anropa avbrott 21 hex, index 9 (indexet i ah)
+        mov     ax,4c00h        ;hoppa tillbaka till dos
+        int     21h             ;programmet krashar utan dessa 2 rader!
+
+</ul>
+END START               ;SLUT (tala om att koden börjar vid labeln start)
+</pre>
+<p>
+------------------------------- KLIPP HÄR -----------------------------------
+<p>
+Ok låt oss nu börja från början och gå igenom programmet steg för steg.
+Allting efter ett semikolon betyder kommentar och ignoreras av assemblatorn.
+Det första som står i själva programmet är alltså:
+ <p>
+DOSSEG<br>
+<p>
+DOSSEG sorterar segmenten efter DOS standard, vad det betyder behöver man
+inte bry sig om. Skriv bara DOSSEG överst i programmet.<br>
+Nästa rad är:
+<p>
+.MODEL SMALL
+<p>
+Detta anger vilken minnesmodell som skall användas.<br>
+Följande minnesmodeller finns att välja på:
+<ul>
+<pre>
+TINY: 	Code + Data &lt; 64K
+SMALL: 	Code &lt; 64K	Data &lt; 64K
+MEDIUM: Code &gt; 64K	Data &lt; 64K
+COMPACT:Code &lt; 64K	Data &gt; 64K
+
+LARGE:	Code &gt; 64K	Data &gt; 64K
+maximal arraystorlek &lt; 64K
+
+HUGE:	Code &gt; 64K	Data &gt; 64K
+maximal arraystorlek &gt; 64K
+</pre>
+</ul>
+Maximal arraystorlek spelar endast roll när man länkar ihop
+assemblerprogrammet med ett c-program.<br>
+<p>
+.STACK 200h
+<p>
+Sätter upp en stack på 200 hex (512 bytes) vid exekveringen men påverkar inte
+storleken på exe-filen. På stacken kan man lagra data med PUSH instruktionen
+och hämta tillbaka data med POP. OBS!!! stacken arbetar enligt principen
+sist in först ut, vilket innebär att man måste poppa data i omvänd ordning
+mot när man pushade dem.
+<ul>
+<pre>
+EX	PUSH	AX
+	PUSH	BX
+	PUSH	CX
+	.
+	.
+	.
+	POP	CX
+	POP	BX 
+	POP	AX
+</pre>
+</ul>
+Om man hade poppat i samma ordning som man pushade skulle AX och CX bytt
+värden.
+Stacken används också till att lagra återhoppsadresser vid subrutiner så att
+programmet vet var det ska fortsätta efter en subrutin.
+<p>
+.DATA
+<p>
+Säger åt assemblatorn att datasegmentet börjar här. I datasegmentet lagrar
+man sina variabler, strängar, sinuslistor, palletter och alla andra data
+man kan tänkas behöva.
+<p>
+<pre>
+MESSAGE DB      'Bla Bla Bla',13,10
+        DB      'Bla Bla Bla','$'
+</pre>
+<p>
+MESSAGE är ett strängnamn ungefär som om man hade skrivit char MESSAGE[25];
+i C. DB betyder Declare Byte vilket betyder att det reserveras en byte för
+varje tecken eller tal som kommer efter på raden. ' tecknen betyder att
+assemblatorn ska lagra ascii-koden för tecknen, stora B har tex ascii-koden 66.
+13,10 är ascii-koderna för ny rad och återvänd till början på rad (motsvaras
+av \n i printf-kommandot i C). $ tecknet är strängavlutnings-tecknet som
+används av utskriftsrutinen längre ner (int 21h funktion nummer 9).
+<p>
+Observera att strängen fortsätter ända till '$' tecknet (även fast man börjar
+på ny rad med db 'Bla Bla' osv), om man glömmer '$' kommer det skrivas ut en
+massa konstiga tecken på skärmen tills datorn hittar ett $-tecken någonstans
+i minnet (efter message).
+<p>
+Man kan ändra i strängen under körningen av programmet. Om man skriver t.ex
+MOV     [MESSAGE],'A'
+kommer första bokstaven i strängen bytas ut mot ett A.
+<p>
+.CODE
+<p>
+Här börjar Kod segmentet, det är här man skriver själva programmet.
+<p>
+START:
+<p>
+Start är bara en label. En label kan ha vilket namn som helst och följs av 
+ett : (kolon). Lablar används för att referera till olika platser i programmet.
+Lablarna byts ut av assemblatorn till relativa adresser vid assembleringen.
+Om man skriver JMP START kommer datorn hoppa till den positionen i programmet,
+ungefär som om man skrivit 'GOTO START' i BASIC.
+<p>
+<pre>
+	MOV     AX,@DATA
+	MOV     DS,AX
+</pre>
+<p>
+Flyttar datasegmentets adress till segmentregister DS, Vilket är en bra
+idé eftersom DS brukar användas just till att peka ut datasegmentet. 
+OBS! det går inte att skriva mov ds,@data direkt, någon sådan instruktion 
+existerar inte i PC assembler (mov segmentregister, värde). 
+<p>
+<pre>
+	MOV     AH,09                   ;flytta talet 9 till ah
+	MOV     DX,offset message       ;flytta message's offset till dx
+	INT     21h                     ;anropa int 21h, funktion nummer 9
+</pre>
+<p>
+INT n anropar avbrottsrutin nummer n (det finns massor att välja på). En 
+avbrottsrutin är som ett underprogram, ungefär som en funktion i C.
+<p>
+Int 21h är en samling DOS funktioner som hanterar bl.a inmatningar från  
+tangentbordet och utskrift till skärmen. För att välja vilken funktion man 
+vill anropa lägger man funktionsnumret i ah, och anropar funktionen med 
+int 21h.<br>
+Funktion nummer 9 i int 21h skriver ut en sträng på skärmen. Innan man 
+anropar int 21h lägger man talet 9 i ah och adressen till det som ska skrivas
+ut i ds:dx.
+En minnesadress är (som jag sagt tidigare) indelad i segment och offset. Det 
+fungerar så att: <br>
+adressen = segment*4 + offset <br>
+och skrivs som: <br>
+segment:offset.<br>
+int21h funk # 9 vill alltså ha adressen till strängen så att segmentet är i 
+ds och offseten i dx (ds:dx).
+<br> 
+Strängen skall avslutas med ett '$' tecken, annars blir det tivoli.
+<p>
+<pre>
+	mov     ax,4c00h        ;ah = 4ch, al = 0
+	int     21h
+</pre>
+<p>
+Ännu en int 21h funktion. Funktion # 4ch Lämnar tillbaka kontrollen till DOS.
+Om man inte utför int 21h funktion #4ch kommer programmet att hänga sig, 
+datorn dyker, vilket för övrigt inte är särskilt ovanligt när man programmerar 
+assembler (om man inte heter Abe förstås :-)). Det finns massor av andra 
+int funktioner att läsa om i olika interruptlistor. Där brukar det stå
+ganska bra beskrivet hur man väljer funktion o.s.v.
+<p>
+END START
+<p>
+Detta säger åt assemblatorn att programmet är slut och att programmet ska
+börja köras vid labeln start. 
+<p>
+Det var det hela!
+Om du tycker att det ser komplicerat ut i början, oroa dig inte för det. Man
+kommer in i tankebanorna efter ett tag, speciellt när man sett några olika 
+program, likheterna och skillnaderna.
+Så gott som hela det här programmet, utom message och utskriften i mitten,
+kommer igen i vartenda assemblerprogram. Man kan använda det här programmet
+som en mall, klippa och klistra in början och slutet som alltid ser 
+likadant ut.
+<p>
+Det går förstås att skriva ut en text på skärmen utan interrupt 21h. Vad man
+gör är att skriva direkt i skärmminnet, som dessutom går mycket snabbare än 
+int 21h. Exakt hur detta går till beror på vilket grafikläge man befinner sig
+i. Jag tänker gå igenom olika grafiklägen litet närmare i program 2.
+<p>
+<hr size="2">
+<p>
+<pre>
+snailmail: 	Albert Veli
+		spisringsg. 9
+		724 76 VÄSTERÅS
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@idt.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+</body>
+</html>

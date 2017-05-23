@@ -1,0 +1,205 @@
+<html>
+<head>
+<title>Abe's Demoschool Part I</title>
+</head>
+<body bgcolor="FFFF88" text="000000">
+<h2>Abe's Demoschool</h2>
+<h4>Part I, mod 13h</h4>
+<hr>
+<p>
+Welcome to part I of the Demoschool. In the demoschool I'll guide you through different demoeffects such as paletterotation, 
+plasma, fire, sprites, 3d-vector-graphics, shading, warping, mode-X, Soundblaster and whatever else that might show up.
+Most parts of the demoschool will be in mode 13h or MCGA-mode as it is also called. That immediatly brings up the first question:
+
+<h3>What is mode 13h?</h3>
+Well, the answer is easy, mode 13h is the graphic mode of the PC that most games and demos are written for. The resolution
+of mode 13h is <b>320</b> pixels horizontally and <b>200</b> pixels vertically. that makes 320*200 = 
+64000 pixels totally on the screen. The pixels on the screen can have <b>256 different colours</b> (each pixel can actually only have
+one colour at a time, but that colour can be one out of 256 colours in the palette). As you should know, one byte (8 bits) can take on 256 different
+values. This means that each pixel in mode 13h could be represented by one byte, and that is also the case. Like I mentioned
+mode 13h has 320*200 = 64000 pixels which is 64000 bytes. The screen-memory in mode 13h begins at adress 
+A000:0000h, and ends at adress A000:FFFFh. This is 65535 bytes which leaves about 4 invisible rows below the bottom
+of the screen. To <b>write a pixel</b> to the screen, first set segmentregister <b>ES to A000h</b> and 
+calculate an <b>offset</b> and put it in <b>di</b> then write one <b>colorbyte to es:d</b>i. The offset is calculated like this:
+<p>
+<b>Offset = 320*y + x</b>
+<p>
+where x is the x-coordinate and y is the y-coordinate. <b>(0,0)</b> is at the <b>upper left</b> corner of the screen 
+and <b>(319,199)</b> is at the <b>bottom right</b> corner of the screen. Here is a table of the coordinates and their respective offsets.
+<pre>
+	(0,0)	(1,0)	(2,0)	(3,0)	.	.	.	(319,0)
+0	0	1	2	3	.	.	.	319	X-axis
+1	320	321	322	323	.	.	.	639 (319,1)
+2	640	641	642	643	.	.	.	959 (319,2)
+.	.	.	.	.	.	.	.	.
+.	.	.	.	.	.	.	.	.
+.	.	.	.	.	.	.	.	.
+199	63680	63681	63682	63683	.	.	.	63999
+	(0,199)	(1,199)	(2,199)	(3,199)	.	.	.	(319,199)
+Y-axis
+</pre>
+Mode 13h is said to be in a <b>linear memory model</b> that means that the bytes follow each other one
+after another.<br> 
+To write a pixel with colour 1 (default blue) at (3,2) you should write value 1 to 
+A000:(320*2 + 3) = A000h:643. Try it, it works. <p>Here comes an unoptimized example in C:
+<pre>
+void putpixel(int x,int y,char color)
+{
+ int offs;
+
+offs=320*y + x;			//calculate the offset using the given formula
+asm	mov	ax,0a000h	//you cant move a value directly to es
+asm	mov	es,ax		//move the screenadress to es
+asm	mov	di,offs		//and the calculated offset to di
+asm	mov	al,color	//and the colorbyte to al
+asm	mov	[es:di],al	//finally move the pixel to the screen
+}
+</pre>
+Before putting a pixel to the screen you've gotta be in the MCGA-mode 13h.
+<b>Switching into mode 13h</b> is done like this:
+<pre>
+	mov	ax,13h	;move the number of the mode to ax
+	int	10h	;and enter the mode using the videointerrupt 10h
+</pre>
+<b>Switching back to textmode</b> 3 is done like this
+<pre>
+	mov	ax,3	;mode 3 is the dos standard mode 80*25 16 color textmode
+	int	10h	;enter textmode 3
+</pre>
+Using inline assembly in C you could write a function to <b>change the mode</b> like this:
+<pre>
+void setmode(int mode)
+{
+asm	mov	ax,mode
+asm	int	10h
+}
+</pre>
+To switch into mode 13h you would write setmode(0x0013); at the beginning of main and to switch back 
+into textmode write setmode(3);
+<p>
+To optimize the putpixel routine you could <b>replace the multiplication</b>, which is very slow, with <b>shifts and adds.</b>
+As you should know, shifting left 1 bit is the same as multiplicating by 2, shiftleft 2 bits is the same as multiplicating 
+by 4 and so on. The trick is to split 320 up into powers of 2, 320 is the same as (256 + 64). Y*320 is the 
+same as (y leftshift 8) + (y leftshift 6). Look at the sourcecode for an implementation of the optimized 
+putpixelroutine using inline-assembler in C.
+<p>
+What colour the pixel will have depends on two things: the colourvalue you write to the screen (0-255) and 
+what colour that value represents in the palette. The palette has 256 entrys (0 to 255). Each colour in the palette 
+is represented by three bytes, one each for the <b>Red, Green and Blue</b> component of the colour. Each value can
+vary between <b>0 and 63</b>. The value gives the intensity of the colour, 0 no intensity, 63 strong intensity. This
+gives 64^3 possible colours.
+
+<br>Examples of common colours
+<pre>
+	Red	Green	Blue	colour
+	______________________________
+	0	0	0	BLACK
+	63	0	0	RED
+	20	0	0	DARK RED
+	0	63	0	GREEN
+	0	0	63	BLUE
+	63	63	0	YELLOW
+	63	32	0	ORANGE
+	63	0	63	PURPLE
+	0	63	63	CYAN
+	63	63	63	WHITE
+	32	32	32	GRAY
+	10	10	10	DARKGRAY
+	And	So	On
+</pre>
+The MCGA mode 13h is always started with the same palett (0 black, 1 blue . . .). But it is easy to change the
+palett by your own. It is done by writing to ports <b>3c8h</b> and <b>3c9h</b>. This is not as hard as it sounds.
+You just write the <b>indexnumber</b> of the first color you intend to change to port <b>3c8h</b>. And then write the Red Green
+and Blue <b>values to port 3c9h</b>. After writing 3 bytes to port 3c9h the index automatically increments itself.
+<p>
+If the palett is stored in an array pal (3*256 bytes long). Let's say that colour 0 is black, colour 1 is blue and
+colour 2 is gray, then pal will start like this: 0,0,0, 0,0,63, 32,32,32, . . .
+<br>
+Here is a C-function which <b>sets the palette</b> to the values of the array pal:
+<pre>
+void setpal(char*pal)
+{
+ int i;
+ outp(0x3C8,0);		//begin with colour 0
+ for(i=0;i&lt;256*3;i++)
+ outp(0x3C9,pal[i]);	//send the palette-data to port 3c9h
+}
+</pre>
+The most common way of handling the palette is to make the array pal in a specially written program for the purpose
+and save the palette to a file on disk. This palette file is easy to recognise because it is 3*256 = 768 bytes big.
+In the demo you just load the palette file from disk to an array and sets it with the function above.
+<p>
+In assembler you can use a very fast instruction,<b> rep outsb</b>, to set the palette, rep outsb sends CX number of bytes
+from DS:SI and sends them to port DX. SI is incremented after each byte.
+Here comes an assembler routine to set the entire palette.
+<pre>
+	mov	dx,03c8h	;move portnumber to dx
+	xor	al,al		;reset ax
+	out	dx,al		;send 0 to port 3c8h
+	lds	si,pal		;setup ds:si to point to pal
+	mov	cx,3*256	;move number of bytes to cx
+	inc	dx		;dx = 3c9h
+	rep	outsb		;send 768 bytes from pal to port 3c9h
+</pre>
+A common demoeffect is to repeatidly <b>rotate the array </b>pal and calling <b>setpal(pal)</b>. Among other effects 
+you could use this technique to make a <b>static plasma</b> effect. First setup the array pal to contain smooth 
+colour runs between some nice colours. Then draw a nice picture on the screen using the sine and cosine
+functions and at last rotate the palette and set it over and over again.
+<p>
+The picture doesn't have to be a plasma picture you could draw just any picture and watch how it looks when
+the palette starts rotating. To rotate the array pal just <b>save the first colour</b> (the first three bytes) and then
+<b>shift</b> all colours <b>down one step</b> in the array (three bytes) and at last <b>set the last colour</b> to the saved colour.
+Here's the C-code for rotating the palette. (it actually rotates colours first to last in the palette)
+<pre>
+void rotpal(char*pal,int first, int last)
+{
+ char r,g,b;
+ int i;
+
+ r=pal[first*3 + 0];	//set r,g,b to the first colour
+ g=pal[first*3 + 1];
+ b=pal[first*3 + 2];
+
+ for(i=first*3;i&lt;(last+1)*3;i++) //move all colours down one step
+ pal[i]=pal[i+3];
+
+ pal[last*3+0]=r;	//set the last colour to the saved first colour
+ pal[last*3+1]=g;
+ pal[last*3+2]=b;
+
+ wtsync();	//wait until the electron beam finishes this frame
+ setpal(pal);	//set the rotated pal
+}
+</pre>
+You don't have to send first and last as parameters to the function but it has some advantages. In the
+example program I use an array that has more than 256 colours and each time I rotate the entire palette, 
+except colour 0, but I only set the 256 first colours. I don't rotate colour 0 because I dont want the backgroundcolour
+to change. Try including colour 0 in the rotation to see what I mean.
+The wtsync function should always be called before changing the palette to avoid "snow" due to bad syncronization
+with the electron beam. Wtsync waits for the<b> vertical retrace</b> which is when the electron beam has finished one frame
+and jumps back to draw the next.
+You could say that the example program is halfway to a real plasma effect, I'll show you a real plasma in
+a later part of the demoschool.
+<p>
+That sould be all for now, look at the C-source for more comments and the implementation.
+<p>
+Download <a href="abedemo1.zip">PART 
+I</a> of the demoschool.
+<p>
+<hr>
+<p>
+<pre>
+951213 Abe Raham
+
+s-mail: Albert Veli
+        Spisringsg. 9
+        724 76 Västerås
+        SWEDEN
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@bilbo.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+<br>
+Back to <a href="./">Abe's 
+Demoschool</a>.<br> </body>
+</html>

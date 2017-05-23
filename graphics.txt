@@ -1,0 +1,262 @@
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+                        Explanation of VGA and VESA 
+                         programming using C/C++
+
+
+
+                                written by 
+                              Jason C. Glass
+
+
+
+                          TABLE    OF    CONTENTS
+
+0 - Ubb-out thee awther ("About the author" for you english speakers)
+1 - Basic Explanation
+ 1.1 - The video buffer
+ 1.2 - The video buffer address
+2 - Programming the VGA card in mode 13h (320x200x256)
+ 2.1 - Why use mode 13h?
+ 2.2 - Plotting pixels
+ 2.3 - Creating custom colors
+3 - Programming the VGA card in 640x480x16 color mode
+ 3.1 - Coping with the insufficient video buffer memory in
+        high resolution modes
+ 3.2 - Why using high res. modes is not recommended for fast
+        graphical programs.
+ 3.3 - Example of it ...  What fun...
+4 - Programming the SVGA card with VESA specific commands
+ 4.1 - The 640x480 high res. mode
+ 4.4 - The other modes that I would never use
+5 - Palette and color special effects
+ 5.1 - Palette Rotation
+ 5.2 - Fading
+ 5.3 - Creating the illusion of fire
+
+THE DOCUMENT - IT ALL STARTED HERE
+                (not really, but i like to say that :)
+
+CHAPTER ZERO - UBB OUT THEE AWTHER
+
+        Well, isn't this solid far out and right on, bob.  My name is
+Jason Glass, and I am a 14 year old programming that has been computing
+for about 4 years, and programming for about 2 or 3 years...  Ummm, so,
+well, I wrote this because my friend Brian was cool enough to let me use
+his Tricks of the Game Programming Gurus for a long time so that I could
+learn some stuff.
+        Well, here I am, and I sorta have had a lot of help, but, mostly,
+I learned pretty much everything from looking at other people's source,
+so this is a document I've put together, to give something back to the com-
+puting community, besides my little programs  I write that suck.  So,
+since I am unmotivated to program something cool and handy, I'm writing
+this document, to give something back to the computing community, besides
+my .....  oh wait, heh, damn notes, gotta fix that.  Well, on with the
+document!
+
+CHAPTER ONE  -  BASIC EXPLANATION
+
+ ONE.1 - The video buffer
+        Well, the video buffer, like all other buffers, is a big block of
+   memory somewhere in that big ummm, hunk-o-junk that figures things out,
+   like, if a number is prime, or .. something...  so anyway, accessing
+   the video buffer is actually an easy thing.  You just declare a vary-
+   ubble, (looks like hubble telescope, dudn't it? :) that is at the address
+   of the video buffer, and plot the pixel, both of which are discussed
+   later.  Jeez, why did I even put this section here...  Okay, well,
+   I will see you later....
+
+ ONE.2 - The video buffer address
+        Well, the address of the video buffer...  Ummm, that would be hidden
+   information, but I guess I'll give it to you, mainly because that is
+   why I wrote this document.  You'll find it at A000:0000, at least,
+   that's the beginning of the buffer, it ends at A000:FFFF, which will
+   handily be fitted to our Mode 13h discussion later.  On to the next
+   section...  That sucked, this section should be lots smaller, I think 
+   I will redo it.  Here we go.
+
+ ONE.2 - The video buffer address
+        Well, A000:0000 - A000:FFFF is it.  Bye
+
+CHAPTER TWO  -  PROGRAMMING THE VGA CARD IN MODE  13H
+
+ TWO.0 - The hidden section!!!
+        Well, congratulations!!!!!  You've found it!!!!  And guess what you
+  win?  A FREE COOKIE, ON ME!!!  To receive your cookie, take your monitor,
+  make sure this image, with this note on it is still there, and head on up
+  to Smiths bakery, pick up your cookie, and be right on.  ...  ...?¨?¨
+
+  TWO.1 - Why use mode 13h?
+        Well, the mode 13h is a good ol' one, and like, it's the fastest,
+   it's the coolest, and it's got 256 colors, which is a good thing.  Also,
+   it's the easiest mode to program in.  That's why, so bye...
+
+  TWO.2 - Plotting Pixels
+        To plot a pixel, you need a couple things: The video buffer address
+   and a pointer to it, and a color number.  A function to plot a pixel would
+   look like this:
+
+        char far *video_buffer = (char far *)0xa0000000l; //Buffer address
+        PlotPixel13h(x,y,c)
+        int x,y;
+        char c;
+         {
+         video_buffer[(y*320)+x] = c;
+         }
+        
+        Now let me explain this...  First off, the c char is the color number,
+   which could also be an integer.  Anyway, setting the video buffer address
+   to the color is just that: you change the register in the array to the color
+   and there is the pixel.  Now, I used 320*y because 320 is the width of the
+   video buffer, and it gets the address to the right line, then adds x, and there
+   it is.  So basically, that is all you really need to know!
+
+  TWO.3 - Creating custom colors
+        Well, I really shouldn't have put this in this section because it
+   applies to all modes and setups.  Oh well, anyways, to change a color's
+   value, all you need is the register values which are 0x3c8, and 0x3c9.
+   What you need to do, is say you want to change color number 4 in the
+   palette(which is red by default) to a new shade of green.  All you do,
+   is output the color register to 0x3c8, like this:
+        
+        outp(0x3c8,4) // 4 for red, the one we're changing to green
+
+        Okay, so now, all we need to do is send the red, green, and blue
+   values to the  register using the 0x3c9 register, like the following:
+
+        outp(0x3c9,0); // 0 red, make sure to keep the order straight:rgb
+        outp(0x3c9,42); // 42 green, a new shade not already in the pal
+        outp(0x3c9,0); // 0 blue because we want green
+
+        Remember any color can be created with red green and blue, I think.
+   Moving along, that is how that is done, so goodbye....
+
+CHAPTER THREE  -  PROGRAMMING THE VGA CARD IN 640x480x16 COLOR MODE
+
+  THREE.1 - Coping with the insufficient video buffer memory in
+            high resolution modes
+
+        Well, see, the video buffer starts at A000:0000 and ends at A000:FFFF
+   which actually all we use is through A000:F9FF, which is exactly 64000
+   bytes, which luckily is 320 * 200!  That's why mode 13h is so  easy- so,
+   you ask, how are the higher resolutions done?  Well, we use video windows
+   which point to different parts of the higher res. screens, 64000 bytes at
+   a time, so it works out okay...  Using banks is discussed in the next chap
+   pppppur
+
+  THREE.2 - Why using high res. modes is not recommended for fast
+            graphical programs.
+
+        Well, basically, only use high res. graphics for, either applications,      
+   or games that don't include lots of movement on the screen(use high res.   
+   for say, an RPG game, but it's a NO-NO for 3-d games).  Okay, basically,
+   that's all I am going to say on this.
+
+  THREE.3 - Example of it ... What fun...
+
+        Well, here is an example I've put together.  It uses just a tad of
+   assembly, which is really hard  to avoid with graphics.  Oh well anyway.
+
+        int bank=0;       //Global bank pointing to the current window
+        SetVGAMode640x480()
+         {
+         asm mov ax,0012h               //Hex number 0x12, 640x480x16 mode
+         asm int 0010h          //Hex for the video interrupt - T.A.T.I.T.I.
+         }
+        Plot640x480(x,y,c)
+        int x,y;
+        char c;
+         {                    //This first part switches to the right bank
+         bank = (y >> 6);
+         asm mov bx,0             //Unused thingie I think-youNeedItThough!
+         asm mov dx,bank          //Bank to switch to
+         asm mov ax,04f05h        //Change bank function
+         asm int 0010h            //Video interrupt again
+
+         video_buffer[(y*640)+x] = c;
+         }
+
+         Well, that's basically it.  Bye...
+
+CHAPTER FOUR  -  PROGRAMMING THE SVGA CARD WITH VESA SPECIFIC COMMANDS
+
+  FOUR.1 - The 640x480 high res. mode
+
+        Well, hi again.  This section is the same as the last one,
+   except this one is vesa, which adds 240 colors to your palette.
+   This mode is basically the same as the last one, so the main difference
+   is the addition of all the colors.
+
+  FOUR.2 - The other high res. modes that I never use
+
+        Well, this is the thing.  800x600 and 1024x768 are really great
+   modes, but I don't use them because of how S.L.O.W. they are.  Ummm, 
+   640x480 is really slow to be making a game, so the higher res's should
+   only be used for applications or GUI's, whatever.  Programming them
+   is just the same as 640x480, you just change the video_buffer[(y*640)+x]
+   to something like video_buffer[(y*1024)+x], you know, just use the logic,
+   and they're easy, the only real difference is that there are more banks
+   to the higher res's than the lower ones.  That's all there is to it...
+
+CHAPTER FIVE  -  PALETTE AND COLOR SPECIAL EFFECTS
+
+  FIVE.1 - Palette Rotation
+
+        Well, palette rotation is an effect that you see in lotsa lotsa games.
+   One good example would be the legend of zelda, the nintendo game, if you
+   remember, at the first where the waterfall flowed down, you should realize
+   that an 8-bit system couldn't do animation that smooth with such a big
+   graphic(the waterfall took up half the screen!).  To remedy this, programmers
+   use an effect called palette rotation, basically all it is is using the
+   custom color changing functions you should've written by now :) and simply
+   rotate say, 100 to 101, 101 to 102, say to 115, which goes to 100.  And
+   just repeat this loop, and voila, color  rotation.....
+
+  FIVE.2 - Fading
+        Well, fading is a simple thing, you take the color altering functions
+   and just decrease them all until you fade to the color you want.  One
+   algorithm to do this smoothly using proportions would be the following:
+
+        int index,index_two,r,g,b,ar,ag,ab;
+        for(index=0;index<256;index++)
+         {
+         for(index_two=0;index_two<10;index_two++)
+          {
+          ar = r; ag = g; ab = b;
+          r = ar / 0.10; g = ag / 0.10; b = ab / 0.10;
+          SetPaletteRegister(index,r,g,b);
+          }
+         }
+
+         And  that pretty much does it for you.  What the 0.10 does is de-
+   crease the thing by 10% each loop.  So it decreases evenly eventually to
+   black.  What a handy function, eh?
+
+  FIVE.3 - Creating the illusion of fire
+        Alright, if you didn't notice this is THE ONLY SECTION THAT DIDN'T
+   START WITH THE WORD "Well," !!!  Okay, enough yippee-ka-doodleing, we've
+   got work to do.  Okay, fire is created, sometimes through animation(which
+   is discussed in the next document I am putting out.), and sometimes through
+   color rotation.  Basically, just define a palette with lots of reds and
+   oranges and yellows, get an algorithm to draw a fire with the colors, then
+   rotate them, and the fire seems to be alive.  Okay bye see you in the next
+   document.  Hoep this helped, I only  took about an hour to write it, so I
+   can  see if your mad that I left something out.  If there's anything your
+   unclear on, just  email me at Blankride9@aol.com...  Well, have fun....
+
+
+                        JASON C GLASS
+   P.S.  I also give skateboarding lessons....  SKOOL ... hehe, just kidding

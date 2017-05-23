@@ -1,0 +1,409 @@
+<html>
+<head>
+<title>Abe's demoschool part 3</title>
+</head>
+<body bgcolor="FFFFFF">
+<h1>Abe's Demoschool</h1>
+<h3>part 3: sprites, linking C &amp; assembler</h3>
+<p>
+Hello and welcome to part 3 of Abe's Demoschool. Last part was pretty messy so
+ this time I'll show you how to split a demo up into several files and 
+<b>link</b> them all together into one executable file. In this part we'll also 
+cover <b>sprite's</b> and how to show a <b>TGA</b> picture. 
+I think it's enough with the TGA format since most
+drawing programs can convert pictures into the TGA format. The TGA format
+is also one of the most simple formats.
+<p>
+
+<h3>WHAT IS A SPRITE?</h3>
+
+A sprite is a rectangular 2-dimensional picture made up of pixels that can 
+be drawn on different positions on the screen. Games often use sprites. 
+In a pinball game the ball is a sprite and in DOOM the monsters are sprites. 
+A car in a car-game viewed from above could consist of 4 sprites. One showing
+the car facing left, one up, one right and one down. All the computer has to 
+do is to determine where the car is on the screen and which direction it is 
+heading and then draw the right sprite at that position. To make the car
+turn smoother it should be made up of at least 8 sprites, facing 8 directions.
+<p>
+To make the sprite routines as fast as possible I used <b>32-bit instructions</b>
+(movsd) that works with 4 bytes at a time. Because of that, the number of 
+pixels in the <b>x-direction</b> has to be <b>divisible by 4</b> (ie 4,8,16,20,32,64). The
+sprites can have any number of pixels in the y-direction.
+As usual we are in mode 13h (MCGA) which means there are 256 colors and that 
+every pixel in a sprite is one byte in memory.
+<p>
+
+This is the way the sprites are stored in memory:
+First 2 bytes (one integer) telling the<b> height</b> of the sprite followed by
+2 bytes telling the <b>width</b> of the sprite. After that comes all the pixels
+in the sprites from left to right, top to bottom. Every pixel is one byte.
+This is called a raw-format. Some raw formats have the width first but I
+have the height first because it fits the sprite routines better.
+<p>
+EX: A sprite with height 20 pixels and width 16 pixels (16 is divisble by 4)
+<p>
+<pre>
+20, 0, 16, 0    //first the height and width
+                //then the raw data
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0         Row 1 16 bytes
+0,0,0,0,0,34,56,6,6,56,34,0,0,0,0,0     Row 2 16 bytes
+
+And So On for 18 more rows.
+</pre>
+<p>
+It is too much work to enter all the sprite-data by hand. You have to use
+some kind of drawing program to draw the sprites. With the drawing program
+save the sprite in TGA-format. Be shure to save it in <b>256-color</b> mode <b>TGA</b>-format.
+Then convert it from 256-color-TGA-format to raw-sprite-format with tga2spr
+which comes with abedemo3.zip. I wrote the <b>tga2spr</b> program a long time ago
+and it isn't very nice but it works. If you want to make the code faster and
+clearer, please do, and mail me a copy of the result.
+<p>
+
+Here are the sprite routines that comes with the source code:
+<p>
+<pre>
+<b>loadsprite</b>( Name, Sprite);              //loads a sprite from disk
+<b>show32spr</b>( x, y, Sprite, Destination);  //Shows a sprite (using fast 32-bit instructions)
+                                        //at (x,y) on the Destination
+<b>showtrans</b>( x, y, Sprite, Destination);  //As show32spr but with color 0 transparent
+<b>erase32bit</b>( x, y, Width, Height, Destination); //erases a rectangular area on the Destination
+<b>get32spr</b>(x, y, source, sprite, width, height); //gets a sprite from the source
+                        //Source is either the visible screen or a virtual screen
+</pre>
+<p>
+Loadsprite loads a sprite to Sprite. Sprite is an array that has to be at 
+least as big as the sprite it will contain.<br>
+Ex:
+<pre>
+char Sprite[2 + MAXWIDTH*MAXHEIGHT];
+loadsprite("mysprite.spr", Sprite);
+</pre>
+<p>
+show32spr copies the sprite to (x,y) at the destination with the help of the
+32-bit instruction movsd<br>
+Ex:<br>
+<pre>
+screen=0x0a0000000;
+show32spr(10,20, Sprite, screen);
+</pre>
+<p>
+screen=0x0a0000000 makes screen a pointer to the screen (A000:0000), this 
+also gives a warning when you compile the program but who cares, it's works (on my compiler).
+Then Sprite is drawn with the top left corner at (10,20) to the screen.
+<p>
+Showtrans shows a sprite with color 0 transparent. Wherever the sprite has
+the color 0 the background will shine through the sprite. Showtrans is slower
+than show32spr, so if the background is black use show32spr instead.
+<p>
+Erase32bit draws a black rectangle with the upper left corner at (x,y) on the
+Destination with width Width and height Height :-).
+It is used to erase a sprite if the background is black. If the background
+is not black you have to save the background in a temporary backgroundsprite
+before you draw a sprite to the screen. To erase it you just draw the saved 
+background over the sprite.
+<p>
+Get32spr is used to save the background as described above.
+<p>
+<b>
+ !CAUTION These routines all suppose that the screen is 320 bytes in width.<br>
+ !CAUTION If you use a virtual screen, it has to be 320 bytes in width.</b>
+<p> 
+All the spriteroutines are in the file asmdemo3.asm and they contain comments.
+<p>
+
+
+<h3>HOW CAN I SHOW MORE THAN ONE SPRITE ON THE SCREEN WITH ONLY ONE PALETT?</h3>
+
+This is a problem. If yo also have a picture in the background and several
+sprites you have to figure out a way for all the sprites to share the same 
+palette.
+<p>
+The easiest way is to draw all the sprites and pictures width the same
+program and the same palette. 
+But if you want to use a scanned picture or make sprites in ie 3d Studio
+then the sprites and pictures will use one palette each.
+Because of this problem I wrote a program that takes one palette and
+one tga-picture and then transformes the tga-picture to use the closest
+colors in the palette. I also wrote a program that takes one palette and
+one sprite with it's palette and transformes the sprite to use the colors
+in the first palette.
+To use the programs first make a palette that contains as many colors as possible
+of the colors in the sprites and pictures that will use the palette.
+Then transform the sprites and pictures with the programs mentioned above (and below).
+These programs are called <b>fittga</b> and <b>fitspr</b> and also comes with abedemo3.zip.
+They are even worse coded and really needs a facelift.
+If anyone does this, please send me a copy.
+I'm sure there must be shareware programs that can accomplish the same task
+much better, If you should stumble over one please mail the adress to me.
+<p>
+To use fittga and fitspr you have to manually change the filenames in the 
+beginning of the main function. You could change this to make the program
+take the filenames as parameters to the program instead.
+<p>
+Look at the file tga.txt for more information on the TGA-format.
+<p>
+
+
+<h3>TO COMBINE C AND ASSEMBLER</h3>
+
+The sprite routines are written in assembler but the main program is written
+in C. How does it work?
+It is really pretty easy. When you compile a C-program to an exe-file you 
+actually do two things. First you compile the C-source to a .obj file, then
+you link the .obj file to a .exe file. You may not have noticed this if you
+use an integrated enviroment like Borland C++ 3.1, which automatically 
+compiles, links and runs the program by a simple keypress (Ctrl F9).
+<p>
+To combine a file written in assembler with a file written in C:
+assemble the assembly-file, compile the c-file and link the .obj files to
+an .exe file.
+<p>
+A function written in assembler is called exactly like a function written
+in C from the C-program. Just tell the compiler that there are functions written
+outside of the C-file whit the command extern.
+<p>
+Ex, suppose the wtsync() function is written in assembler in another file.
+Then the C-program will call it like this:
+<p>
+<pre>
+#include <stdio.h>      /* Don't include stdio.h if you don't have to */
+                        /* it'll only increase the size of the .exe */
+extern void wtsync(void);       /* tell the compiler that the wtsync */
+                                /* code is somewhere else */
+void main(void)
+{
+        .
+        .
+        .
+        wtsync();               /* wtsync is called the same way as usual */
+        .
+        .
+        .
+}
+</pre>
+And the assembler file will look like:
+<pre>        
+        P386N                   ;allow 386-instructions
+        IDEAL                   ;use tasm's ideal mode
+        MODEL small             ;(data &lt; 64k) and (code &lt; 64k)
+        CODESEG
+
+        PUBLIC  _wtsync         ;make wtsync public so that
+                                ;it can be called from the c-program
+
+PROC    _wtsync NEAR		;NEAR means that the PROCess is
+				;NEAR callable, that is that the code
+        .                       ;for the PROCess is in the same segment
+        .			;as the caller's code. This is always
+        .			;the case if you use model small
+        
+        ret                     ;don't forget the ret or else the
+                                ;program will crash
+ENDP    _wtsync
+
+        END
+</pre>
+Notice the _ before wtsync in the assemblerfile. You have to <b>add an _ before
+the function name</b> in the <b>assembler</b> file to make it callable from c.
+Don't write the _ in the c-file.
+Suppose wtsync is written in the file asmtest.asm and the c-file is ctest.c.
+There are a number of ways to build the .exe.
+I usually compile the assembler file/files with tasm and use Borland's
+command line compiler, bcc for the c-source:
+<p>
+<pre>
+With Borland C++ write:
+        tasm /ml asmtest
+        bcc -c ctest
+        bcc -ms ctest.obj asmtest.obj
+
+With Turbo C write:
+        tasm /ml asmtest
+        tcc -c ctest
+        tcc -ms ctest.obj asmtest.obj
+</pre>
+
+tasm /ml makes the .obj of the assemblerfile. /ml tells tasm to turn on
+case sensitivity, this is because C uses case sensitivity.
+<p>
+bcc -c makes the .obj of the cfile. -c means only compile, no linking.
+<p>
+bcc -ms links the objectfiles to an executable .exe-file. -ms tells bcc to
+use memory model small.
+<p>
+The result is a file called ctest.exe because ctest.obj was befor asmtest.obj
+at the time of the linking.
+<p>
+That's it.
+There are lots of advantages writing some of the functions in pure assembler.
+One advantage is that we can use 386 specific instructions like movsd. That 
+isn't possible with inline assembler like we used in part 2.
+The C-file will also be a lot smaller, which makes it easier to read and
+understand.
+The disadvantage is the writing of the assembler-funktions, that can be hard
+if you're not used to it (I give you the assembler-functions for free to use
+and enhance). I have learned to master turbo assembler with the help of the
+book: mastering turbo assembler by Tom Swan.
+<p>
+
+<h3>IMPORTANT WHEN MIXING ASSEMBLY AND C:</h3>
+
+* Sending arguments from C to assembler:
+        use the <b>ARG</b> directive (looke at the source-code for examples).
+        Here's the shell of a routine that takes arguments:
+<p>
+<pre>
+                ARG     xpos:word, . . .        ;put all arguments here
+                push    bp              ;this has to do with the stack
+                mov     bp,sp           ;don't bother too much about it right now
+                .                       ;just put push bp and mov bp,sp first in
+                .                       ;the routine and pop bp last
+                .                       ;if you're using arguments
+                .
+                mov     ax,[xpos]       ;use the argument (YES IT IS THIS SIMPLE)
+                .                       ;remember the braces []
+                .
+                .
+                pop     bp
+                ret
+</pre>
+<p>
+* Sending <b>returnvalues</b> back to the C-program:
+<p>
+        Returnvalues are sent in ax and dx depending on the size
+<pre>
+                SIZE            RETURNREGISTER  EXAMPLE ON DATATYPE
+                Byte            al              char
+                Word (2 byte)   ax              int
+                Dword (4 byte)  dx:ax           char far*
+</pre>
+<p>
+* Always <b>save ds, si and di</b> on the stack if you change them in the routine
+<p>
+Or else the program will probably chrash because C uses ds,si and di.
+You are allowed to change AX, BX, CX, DX and ES without saving them.
+It doesn't matter for the C-program.
+<p>
+
+* Avoid local variables in the assembler routines. Use registers instead, they
+are much faster. If you have to use local directve <b>LOCAL</b> which works like
+the ARG directive.
+<p>
+You may have noticed that I used ideal mode in the wtsync example. <b>Ideal</b> mode
+only works with <b>TASM</b>. There are only small differencies in IDEAL mode.
+The differences makes IDEAL mode easier to read and understand. I think of
+the differences as improvements. Ideal mode is getting pretty big on the
+internet too, many of the newer assembly-sources you find on internet are
+in ideal mode.
+<p>
+EX: some differences in Ideal mode
+<pre>
+	<b>Normal</b>			<b>Ideal mode</b>
+	.386			p386n
+	.MODEL small		MODEL small
+	.DATA			DATASEG
+	.CODE			CODESEG
+	name PROC NEAR		PROC name NEAR
+	name ENDP		ENDP name
+
+</pre>
+<p>
+A GREAT advantage with Ideal mode is the <b>ARG</b> directive which makes
+parameters to assembly routines as easy to handle as parameters to a C-function.
+Like I mentioned there is also the <b>LOCAL</b> directive for local variables.
+
+<h3>THE SAMPLEPROGRAM DEMO3.C:</h3>
+
+All functions in demo3 are written in the assembler file <b>asmdemo3.asm</b>
+The C-source is in <b>demo3.c</b>. Demo3.c is pretty much explains itself but there
+are a couple of functions in the assembly-file that needs more explanation.
+Showpic reads a picture, stored as raw-data, to the screen or a virtual screen.
+If you're using a virtual screen it must be 320 pixels wide.
+The program uses a virtual screen the same size as the visible screen
+320*200 = 64000 bytes.
+First, memory is allocated for the virtual screen using a malloc function which 
+is declared in the asmdemo3.asm. Then the picture is loaded into the virtual 
+screen and a palette is loaded and set. 
+Then the virtual screen is flipped over to the visible screen using a 
+digital dissolve effekt which I will talk more about later.
+<p>
+After the dissolve effekt comes the main loop where a transparent sprite
+bounces across the screen. All the drawing and erasing is made on the virtual
+screen, when one frame is done the virtual screen is flipped over to the visible
+screen and the next frame is calculated . . .
+The main loop follows these steps:
+<p>
+<pre>
+        1.      Save the background where the sprite will be drawn
+        2.      Draw the sprite
+        3.      Flip virt over to the screen
+        4.      Erase by drawing the saved background over the sprite on the virtual screen
+        5.      calculate new coordinates for the sprite, GoTo 1
+</pre>
+<p>
+Before the program is finished the allocated memory must be released using
+the free function which also is declared in asmdemo3.asm.
+<p>
+
+The Dissolve effekt uses an interesting algoithm which gives all numbers
+between 1 - FFFFh in random order, no number comes up more than once before
+all numbers have come up !!!
+<p>
+PSEUDOCODE:
+<pre>        
+        set the offset to any number but zero (ie 1)
+        for(i=0;i&lt;0x0FFFF;i++)
+        {
+                Do something with the offset    (like flip one point to the)
+                .                               (screen using the offset)
+                .
+                .
+                Shift the offset right 1 bit    (like dividing by 2)
+                if the shifted bit was 1        (if carry is set)
+                then offset = offset xor 0x0b400
+        }
+</pre>
+<p>
+This way offset will take on all values between 1 - FFFFh.
+Don't ask me how, but it really works.
+I got the idea from Graphic Gems I side 221.
+<p>
+
+See the file targa.txt for a description of the TGA-format.
+<p>
+
+The next part will be about 2d and 3d vectorgraphics. I'm currently 
+optimizing the routine that draws a filled triangle to the screen, 
+hopefully it'll get fast. You lucky weezers will get the routines served
+on a silverplate, but hey, it's the 90's.
+<p>
+
+<h3>DISCUSSION:</h3>
+<p>
+Most computers today have hardwaresupport for drawing sprites (Already the
+Commodore 64 had it). It's usually called something like bitblt and
+that means Bit Blast.
+On the PC, most graphic cards also do have bitblt, but there's no standard
+so you can't use the BitBlt. Because it'll only work on your own computer
+and the computers that have similar graphiccard to your one.
+But if you want to try, there's information about various cards in the
+book "Programming the Ega, Vga and SuperVga Cards" by Richard Ferraro.
+<p>
+Download <a href="abedemo3.zip">abedemo3.zip</a> <p>
+<hr>
+<p>
+<pre>
+Sprit'em
+Says: Sir Abe
+elecronic mail:	<a href="mailto:dat94avi@bilbo.mdh.se">dat94avi@bilbo.mdh.se</a>
+snail mail:	Albert Veli
+		Spisringsg. 9
+		724 76 V�ster�s
+</pre>
+<p>
+<a href="http://www.mds.mdh.se/f�reningar/small/abe/">Back</a> to the
+Demoschool.
+</body>
+</html>

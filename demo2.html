@@ -1,0 +1,233 @@
+<html>
+<head>
+<title>'PART 2 4 U'</title>
+</head>
+<body>
+<h2>Albert's demoskola</h2>
+<h4>Del 2, Med flaggan i topp.</h4>
+<hr>
+<p>
+Idag går jag igenom hur man fadear in och fadear ut paletten, hur man 
+ritar ut text i grafikläge, hur man använder förberäknade listor 
+och hur man använder en virtuell skärm.
+<p>
+Hur man sätter paletten gick jag igenom i del 1 av demoskolan, att fadea
+paletten är i stort sätt samma sak. Genom att upprepade gånger sätta paletten
+och för varje gång ändra lite på värdena, kommer alla färger på skärmen att
+ändras. Ett vanligt trick är att sätta alla färger i paletten till svart, 
+sedan rita ut något på skärmen och sedan fadea in paletten. På så sätt ser
+det ut som bilden fadeas in, därav namnet.
+<p>
+Som du kommer ihåg anger man först vilken färg som ska ändras till port
+0x03c8 (3c8h). Om hela paletten ska ändras är det lämpligt att börja med
+färg 0. Sedan skickas r,g,b bytearna till port 3c9h. Det blir alltså 3 bytes
+för varje färg. Indexet räknas upp automatiskt när man skickat 3 bytes till
+port 3c9h. För att sätta alla färger till svart skickas värdet 0 till port
+3c9h 256*3 ggr alltså.
+<p>
+Här kommer ett exempel på det i C:
+<pre>
+void blackpal(void)
+{
+int i;
+outp(0x3c8,0);
+for(i=0;i&lt;256*3;i++) outp(0x3c9,0);
+}
+</pre>
+Att sedan fadea in paletten är litet klurigare (men inte mycket).
+Paletten som funktionen ska fadeas till skickas som parameter.
+I funktionen har man sen en lokal palett pal att jobba med. Jag börjar med
+att sätta hela pal till 0. Sedan loopar jag 64 varv och i varje varv jämför
+jag varje byte i pal med motsvarande byte i palett. Om byten i pal är mindre
+än den i palett ökas byten i pal med 1. Till slut (efter max 64 varv) har
+alla bytes i pal nått samma värde som deras bröder i palett och hela paletten
+är infadead. I början av varje varv i loopen har jag lagt in en fördröjning
+wtsync. Den har 2 syften, dels att fördröja fadeningen så man hinner se den och
+dels motverkar den "snö" när paletten ändras.
+<pre>
+//fadear in paletten palett
+void fade_in(unsigned char*palett)
+{
+int i,j;
+unsigned char pal[256*3];       //lokal array att jobba med
+
+for(i=0;i&lt;256*3;i++) pal[i]=0;  //börja med att sätta hela pal till 0
+for(j=0;j&lt;64;j++)               //fadea i 64 steg
+{
+outp(0x3c8,0);          //Varje steg börjar med att sätta färg 0
+
+wtsync();               //fördröjning, ta bort den ena wtsync för dubbelt 
+wtsync();               //så snabb fadening
+
+        for(i=0;i &lt; 256*3;i++)
+        {
+                outp(0x3c9,pal[i]);     //skicka ut nuvarande byte i pal till 3c9h
+                if(pal[i] &lt; palett[i]) pal[i]++; //jämför med "slutvärde"
+        }       //om pal[i] &lt; palett[i] så öka pal[i] med 1.
+}
+}
+</pre>
+Den här funktionen fadear alltid in paletten palett från svart. En variant
+vore att sätta pal till nuvarande palett (med getpal) och sedan fadea mot
+paletten palett. Istället för raden där pal nollställs skriv getpal(pal).
+Och lägg till i den innersta loopen:
+<p>
+<pre>
+        if(pal[i] &lt; palett[i]) pal[i]++;
+        if(pal[i] &gt; palett[i]) pal[i]--;
+</pre>
+<p>
+På så sätt kommer pal[i] att gå mot palett[i] även om pal[i] är större än 
+palett[i].
+getpal finns i demo1.c. Jag glömde att nämna det förra gången men jag gör det
+nu istället, för att läsa den nuvarande paletten skicka färgnummer till 3c7h
+och läs från 3c9h med instruktionen in i assembler, eller inp i c. Getpal blir
+snarlik setpal, byt 0x3c8 mot 0x3c7 och byt outp mot inp.
+Två andra mycket vanliga fadeningar är att fadea ut från nuvarande palett till
+svart och att fadea ut från nuvarande palett till vitt. Det så enkelt att jag
+inte ens tänker prata om det, titta i demo2.c för att se hur det går till.
+<p>
+Att skriva text på skärmen i grafikläge är inte alls lika lätt som i textläge.
+Det går i och för sig att använda printf, men gör för guds skull inte det, 
+printf är sååå lååångsamt. Gör istället en array där alla tecken du tänker
+använda är lagrade. Det enklaste är att låta en byte representera en pixel.
+Om varje tecken är 8*8 pixels stort, tar varje tecken alltså 8*8=64 bytes i
+arrayen. Jag har valt att göra en global array som jag kallar chars64 där ascii
+tecknen 32 . . 90 är lagrade. Det är från mellanslag till stort Z i ascii
+tabellen. Frågan är hur man ska få tag i mönstret för varje tecken. Det finns
+2 sätt. Det ena sättet är att rita tecknen själv i ett ritprogram och ladda in
+dem från en separat fil när programmet startar. Det andra sättet är att titta
+i BIOS dataarea där mönstren för alla tecken som dos använder finns lagrade.
+Att rita alla tecken själv är alldeles för mycket jobb för mig. Det finns dock
+massor av sådana här "fonter" att ladda hem från internet, men det tar vi nästa
+gång. Den här gången har jag valt att kolla i BIOS eftersom det är enklast.
+Problemet med BIOS är att tecknen där ligger lagrade med 8 bytes var. En bit
+för varje pixel alltså. 
+<p>
+<pre>
+Ex : Bokstaven A i BIOS dataarea
+Byte            Binärt                          Decimalt
+BYTE 0:         0 0 0 0 0 0 0 0         =       0
+BYTE 1:         0 0 0 1 1 0 0 0         =       24
+BYTE 2:         0 0 1 0 0 1 0 0         =       36
+BYTE 3:         0 1 0 0 0 0 1 0         =       66
+BYTE 4:         0 1 1 1 1 1 1 0         =       126
+BYTE 5:         0 1 0 0 0 0 1 0         =       66
+BYTE 6:         0 1 0 0 0 0 1 0         =       66
+BYTE 7:         0 0 0 0 0 0 0 0         =       0
+</pre>
+<p>
+Som synes betyder en 0:a bakgrundsfärg och en 1:a förgrundsfärg.
+Men vi ville ju ha en byte för varje tecken. Lösningen är att shifta ut 
+bitarna en och en. Om den utshiftade biten var en nolla sätter vi den 
+motsvarande byten i chars64 till noll annars sätter vi byten till en 
+förgrundsfärg. Förgrundsfärgen kan vara vilken som helst av 256 möjliga.
+Alltså behöver inte tecknen ha samma färg. Färgen kan t o m variera inom varje
+tecken. Jag har gjort så att den översta raden på varje tecken är ljus. Sedan
+drar jag ifrån 3 färger för varje rad. (Det förutsätter att paletten går från
+mörkare till ljusare färger).
+<p>
+Data för BIOS teckentabell börjar på adress F000:FA6E
+Varje tecken tar som sagt 8 bytes. Tecknen ligger i samma ordning som ascii
+tabellen. Stora A har t ex ascii 65. Mönstret för A ligger alltså på adress
+F000:(FA6E + 65*8). Detta borde vara tillräckligt för att förstå funktionen
+getbioschars i koden. För att rita ut tecknen har jag gjort 2 funktioner.
+Showchar ritar ut ett tecken på skärmen (tecknet bör vara ett av tecknen som 
+finns med i chars64 annars blir det bara skräp på skärmen) vid (x,y).
+Showchar struntar i vilken färg det är på pixlarna, den ritar ut allt, även
+bakgrundsfärgen 0.
+putcharonflag ritar ut ett tecken på arrayen flag. Putcharonflag kollar om
+färgen är 0, då hoppar den bara vidare men om färgen != 0 så ritar den.
+Jag fick inte putcharonflag att fungera så jag tog till ett fult knep, istället
+för att skicka pekaren till arrayen där tecknet ska ritas ut, skickar jag offseten
+direkt. Det är nåt skumt med pekarna i min C-kompilator ibland går det bra
+att skicka dem och ibland inte. Det brukar gå bra om storleken på arrayen
+är jämnt delbar med 16, av någon anledning, har jag kommit fram till.
+<p>
+Lookup-tabeller eller förberäknade listor som det kallas är ett av de flitigast
+använda optimeringstricken inom demoprogrammering. Det går ut på att förberäkna
+så mycket som möjligt i början av programmet och spara resultaten i listor.
+Sedan, inne i själva huvudprogrammet behöver då datorn inte utföra några 
+avancerade beräkningar utan bara slå upp resultaten i förberäknade listor.
+Det klassiska exemplet är en sinuslista, som jag använt här. Programmet går
+ut på att rita ut en flagga i sinusvågor på skärmen. Alla förflyttningar av
+flaggan förberäknas och läggs i arrayen sinlist. Vågorna ska gå mellan +20 till
+-20 pixlars förflyttning i både x-led och i y-led. beräkningen av sinlistan
+blir då: 
+<pre>
+        for(i=0;i &lt; xxx;i++) sinlist[i]=sin(K*i)*20;
+</pre>
+K och XXX är konstanter som beror på hur lång listan ska vara och hur långa
+vågorna ska vara. Ju mindre K är desto längre blir vågorna. Sinus varierar ju
+som bekant mellan -1 och 1. sin(nånting)*20 varierar då mellan -20 och +20, 
+vilket är exakt det vi vill att flaggans förflyttningar ska göra.
+Samtidigt som flaggan går i sinusvågor i x- och y-led skrivs 2 texter ut på 
+skärmen. Den första textens y-position låter jag variera enligt samma sinus-
+lista, och den andra textens x-position låter jag också variera enligt listan.
+Till och med flaggans färg varierar i x-led enligt samma lista.
+På så sätt ser det ut som det är massor av olika sinusberäkningar på gång på
+skärmen, men i själva verket är allt förberäknat. Det går att ändra konstanterna
+som påverkar sinuslistan. Konstanterna är #define deklarerade överst i programmet
+och det är enkelt att ändra på dem.
+<p>
+Programmet använder sig även av en virtuell skärm. En virtuell skärm är ingenting
+annat än en array som man använder till att jobba med bilden på. När bilden
+är färdigritad på den virtuella skärmen "flippas" den virtuella skärmen över
+till den fysiska skärmen och blir synlig på monitorn. Genom att använda sig av
+en virtuell skärm kan man göra vad som helst och hur länge som helst på den
+virtuella skärmen utan att det syns på den fysiska skärmen. Det är ändå 
+viktigt att få upp hastigheten på beräkningarna eftersom ju fler flippningar
+man hinner med per sekund desto mer flytande blir demot. Det är ju inte särskilt
+upphetsande att titta på ett demo som uppdaterar skärmen en gång i sekunden.
+Innan den här flippningen bör man vänta på elektronstrålen, wtsync kallar jag
+den funktionen. Om man inte väntar på skärmsynket uppstår det lätt flimmer 
+eftersom flippningarna kommer i otakt med elektronstrålens uppdatering av
+skärmen. I det här programmet är inte den virtuella skärmen lika stor
+som hela den fysiska skärmen utan bara en del av den, den delen där flaggan 
+befinner sig. 
+<p>
+Vissa grafiklägen har mer än en skärmsida, det betyder att man
+kan rita ut bilden på en osynlig (virtuell) sida under tiden som en annan sida 
+är synlig och när bilden är klar flippa över till den före detta osynliga 
+sidan. Det är exakt samma sak som att ha den virtuella skärmen i minnet fast 
+flippningen går snabbare eftersom allting sker i videominnet (skärmminnet).
+Tyvärr finns det bara en sida i mod 13h som vi håller på med. Det går dock
+att modifiera mod 13h till att stödja flera sidor, 4st. Nackdelen är att man 
+då förlorar den linjära minnesadresseringen och måste fippla med plan. Jag går 
+igenom det senare, om ett par avsnitt.
+<p>
+Demo2.c innehåller koden för flaggan och texten.
+onlyflag.c innehåller koden för bara flaggan som kanske är mera lättläst.
+<p>
+Det var allt för idag, koden är lite stökig i main men det får man leva med.
+Funktionerna som anropas från main är dock lättlästa och det är fritt fram
+att använda dom i era egna program, jag bryr mig inte. Om ni gör nånting fint
+kan ni ju nämna mig någonstans om ni har lust.
+<p>
+Nästa gång tänkte jag gå igenom 2d, 3d rotationer och vektorgrafik, som  ju 
+är frekvent återkommande i alla demos med någon som helst klass.
+<pre>
+PS      programmet är fortvarande inte särskilt snabbt trots de förberäknade 
+        listorna, det skulle bli snabbare genom att använda 386-
+        instruktioner, men det tillåter inte min c-kompilator (borland C 3.1)
+        Det går dock att skriva en del funktioner i ren assembler och länka
+        ihop med huvudprogrammet, då går det utmärkt att använda 386-instr.
+        detta går jag också igenom senare. . .  DS
+<p>
+Ladda hem demoskolan <a href="demo2.zip">del 2</a>. <p>
+<hr>
+<p>
+<pre>
+Abe Brave-Babe
+
+s-mail: Albert Veli
+        Spisringsg. 9
+        724 76 Vdsteres
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@idt.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+<br>
+Tillbaka till <a href="http://www.mds.mdh.se/~dat94avi/">min hemsida</a>.
+</body>
+</html>

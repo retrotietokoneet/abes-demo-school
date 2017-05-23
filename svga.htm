@@ -1,0 +1,391 @@
+<html>
+<head><title>SVGA putpixel</title></head>
+<body bgcolor="#FFFFFF" text="#000000" link="#0000EE" vlink="#7F007F" alink="#00FF00">
+<p>
+<h2>Abe's bag of tricks</h2>
+<h3>SVGA Putpixel</h3>
+<p>
+Welcome to this, the very first little trick in my bag. Hopefully there will
+be lots of tricks here that you can put in your own bag of tricks or perhaps
+you prefer to have them in your hat :-). I plan to put small tricks here that
+doesn't really fit into any part of the normal demoschool but is good to know
+anyway. I also plan to answer often asked questions here. One question that
+I've received many mails about is
+<p>
+<pre><h4>
+* How do I put a pixel in svga mode 640*480 256 colors?
+  I only seem to be able to put them in the upper part of the screen.
+</h4></pre>
+<p>
+Answer:
+<p>
+In this mode the screen has 640*480 pixels and each pixel takes one byte in 
+memory since it's 256 colors. As you perhaps know, one segment in real mode 
+on the PC is 64k. 640*480 = 300k (307200 bytes). That means that it would
+take 300/64, approximately 4.7, 64k segments to fill one 640*480 screen. 
+The PC only uses one 64k segment, A000:0000 - A000:FFFF, for graphic memory. 
+With this you can <strong>only reach about 1/5 of the top of the screen</strong>.
+But there has got to be a way to draw an entire 640*480 screen you may say,
+and it does. The answer is <strong>bank switching</strong>. With a couple of out instructions 
+to the graphic card you can tell the card which portion of the screen should
+be mapped to A000:0000 - A000:FFFF. Each "bank" is 64k big. 
+The first bank (bank 0) reaches down to the middle of row 103 (65536/640). 
+To reach the rest of row 103 and the next 102 rows you have to switch to 
+bank 1. The 102 rows after that is bank 2 and so on. The last row is somewhere 
+in bank 4.
+<p>
+It looks something like this:
+<p>
+figure of banks.
+<p>
+The figure isn't exact but you get the idea I hope.
+The address of a pixel is calculated like this:
+<p>
+<pre>
+    address = 640*y + x
+</pre>
+<p>
+Out of this address you get the banknumber:  address/0ffffh
+and the offset into the bank:                address%0ffffh
+<p>
+In assembler you can calculate both the banknumber and offset with only
+one mul like this:
+<p>
+<pre>
+   mov ax,[y]        ;y to ax
+   mul 640           ;(640*y)%0ffffh to ax
+                     ;and (640*y)/0ffffh to dx
+   add ax,[x]        ;add the x-value
+   jnc nocarry       ;if carry is set then
+   inc dx            ;increase dx (just passed a bankborder with that add)
+nocarry:
+
+;Now dx is the banknumber of the point and ax is the offset into 0a000h
+   .
+   .                ;switch bank
+   .
+;just draw the point like we are used to, offset is in ax
+   mov bx,0a000h
+   mov es,bx        ;a000h to es
+   mov di,ax        ;calculated offset to di
+   mov ax,[color]   ;the color of the pixel
+   mov [es:di],ax   ;draw it
+</pre>
+<p>
+You may have noticed that I skipped the switch bank part. That was on purpose
+because there are two ways to do this. Either you can <strong>write directly to the 
+ports</strong> of the graphic card or you can <strong>use the VESA bankswitch interrupt</strong>.
+To write to the ports seems to be slightly different depending on which card
+you have. That is NO GOOD. You'd have to write many bankswitch routines which
+works for their special card and detect which card is in the machine at the
+initialization of the program. This is too much work for our bag of tricks
+so we use the slow VESA bankswitch interrupt which at least works on all
+modern cards.
+<p>
+It's straightforward, just put 4f05 in ax, 0 in bx and banknumber*16 in dx.
+Then call int 10h.
+Here is the bankswitching code:
+<p>
+<pre>
+  asm mov ax,4f05h     /* VESA switch bank */
+  asm xor bx,bx        /* bx should be 0 */
+  asm mov dx,[bank]    /* dx = bank*16 */
+  asm shl dx,4
+  asm int 10h          /* and do it */
+</pre>
+<p>
+Remember to save ax if you put it in the pixel code above. 
+I have written a very small C-program that puts pixels on 
+a 640*480 screen in different psychedelic patterns. 
+Then the palette is rotated, just like in the demoschool part I.
+You can change pattern by pressing + or -. 
+Stop the paletterotation with space and end the program with Escape. 
+If you keep pressing + a while there will appear some very interesting 
+patterns. The pattern formula was a pure hack, I just tried different combinations of i, j &amp; w until it made a cool pattern.
+<p>
+<center>
+ CORRECTION CORRECTION CORRECTION CORRECTION CORRECTION CORRECTION 
+CORRECTION
+</center>
+<p>
+In the first version of this document I used setmode(0x05f) to set 640*480
+256 colors mode. This ONLY work on cirrus cards. Other cards have 
+different
+mode values for this mode. To make the mode-switch work on all cards use 
+the
+VESA change-mode interrupt call to int 10h. Look at the code for the
+implementation. Mode 640*480 256 col is VESA mode 101h.
+Some good VESA modes are:
+<p>
+<pre>
+ Resolution colors VESA-mode
+ 640*480    256    101h
+ 800*600    256    103h
+ 1024*768   256    105h
+ 640*480    64k    111h
+ 320*200    16M    10fh
+ 640*480    16M    112h
+</pre>
+<p>
+<center>
+ CORRECTION CORRECTION CORRECTION CORRECTION CORRECTION CORRECTION CORRECTION
+</center>
+<p>
+<strong>The C-code, Mr Ant on Magic Mushrooms:</strong>
+<p>
+
+<center> 
+&lt; 
+-------------------------------Cut---Here----------------------------------- 
+&gt; </center>
+<p>
+<pre>
+
+/**********************************************************************/
+/*              Abe's bag of tricks, SVGA Putpixel                    */
+/*                                                                    */
+/*                                                                    */
+/* In part 4 I said that part 5 would be about filled vector graphics */
+/* But this is something completely different, this is Svga.          */
+/* So I can't call this part 5. I could call it part 4.5 or I could   */
+/* Create a new section in the demoschool, and that's what I did.     */
+/*                                                                    */
+/*                  1996-05-14 Abe Racadabra                          */
+/*                  mail: dat94avi@bilbo.mdh.se                       */
+/*                                                                    */
+/**********************************************************************/
+
+#include<conio.h>
+#include<stdio.h>
+
+#define PALSIZE 256
+
+int bank;            /* bank and pal is global just because I'm so lazy */
+char pal[PALSIZE*3];
+
+void printinfo(void)
+{
+clrscr();
+printf("This silly little program's sole purpouse is to demonstrate\n");
+printf("how to use a putpixel routine in svga 640*480 256 colors.\n\n");
+printf("Keys:   +     increase w\n");
+printf("        -     decrease w\n");
+printf("        space stop cycling the palette\n");
+printf("        Esc   quit\n\n");
+printf("Press a key to begin\n");
+getch();
+}
+void wtsync(void)
+{
+asm mov     dx,3DAh
+WaitVR1:
+asm in      al,dx
+asm test    al,8
+asm jne     WaitVR1
+WaitVR2:
+asm in      al,dx
+asm test    al,8
+asm je      WaitVR2
+}
+
+void getpal(void)
+{
+int i;
+outp(0x3c7,0);
+for(i=0;i&lt;256*3;i++)
+pal[i]=inp(0x3c9);
+}
+
+void setpal(void)
+{
+int i;
+outp(0x3c8,0);
+for(i=0;i&lt;256*3;i++)
+outp(0x3c9,pal[i]);
+}
+
+
+void cyclepal(void)
+{
+char r,g,b;
+int i;
+r=pal[0];
+g=pal[1];
+b=pal[2];
+for(i=0;i&lt;(PALSIZE-1)*3;i++) pal[i]=pal[i+3];
+pal[(PALSIZE-1)*3+0]=r;
+pal[(PALSIZE-1)*3+1]=g;
+pal[(PALSIZE-1)*3+2]=b;
+wtsync();
+setpal();
+}
+
+/* change these color-runs for different colors (duh . . .) */
+void coolpal(void)
+{
+int i,r=0,g=0,b=0,col;
+
+col=0;
+
+outp(0x3c8,0);
+
+for(i=0;i&lt;64;i++)  /* color 0-63 */
+{
+        pal[col++]=r;
+        pal[col++]=g;
+        pal[col++]=b;
+        if(r&lt;63) r++;
+}
+for(i=0;i&lt;64;i++)  /* color 64-127 */
+{
+        pal[col++]=r;
+        pal[col++]=g;
+        pal[col++]=b;
+        if(g&lt;63) g++;
+}
+for(i=0;i&lt;64;i++)  /* color 128-191 */
+{
+        pal[col++]=r;
+        pal[col++]=g;
+        pal[col++]=b;
+        if(b&lt;63) b++;
+}
+for(i=0;i&lt;64;i++)  /* color 192-255 */
+{
+        pal[col++]=r;
+        pal[col++]=g;
+        pal[col++]=b;
+        if(r&gt;0) r--;
+        if(g&gt;0) g--;
+        if(b&gt;0) b--;
+}
+setpal();
+}
+
+void setmode(int mode)
+{
+asm     mov     ax,mode
+asm     int     10h
+}
+
+void setVesaMode(int mode)
+{
+asm mov ax,4f02h
+asm mov bx,mode
+asm int 10h
+}
+
+
+/* this is the slow way to switch bank, with the VESA bios interrupt */
+/* it is faster to write to the ports of the graphic card directly */
+/* but that seems to bee different for every card, this works for all */
+void setbank(void)   /* the bank that shall be set is a global variable */
+{
+asm mov ax,4f05h     /* VESA switch bank */
+asm xor bx,bx        /* bx should be 0 */
+asm mov dx,bank      /* dx = bank*16 */
+asm shl dx,4
+asm int 10h          /* and do it */
+}
+
+/* The adress is calculated with is 640*y + x */
+/* a mul works great because it puts the high 16 bits of a mul in dx */
+/* and the low 16 bits in ax */
+/* after the mul, dx will contain the bank number */
+/* and ax will be the offset into that bank */
+void putpixel(int x,int y,unsigned char col)
+{
+int ofs;
+asm mov ax,640
+asm mov bx,y
+asm mul bx         /* ax = 640*y, dx = bank */
+asm add ax,x       /* ax = (640*y + x)%(64k) */
+asm jnc noc        /* if the add went into a new bank (carry set) */
+asm inc dx         /* then bank = bank + 1 */
+noc:
+asm mov ofs,ax     /* mov ax (offset into bank) to ofs */
+asm cmp dx,bank    /* compare this pixel's bank to the current bank */
+asm jz same        /* if it's the same, don't set the bank */
+asm mov bank,dx    /* else update bank */
+setbank();         /* and set new bank (faster to put the code here directly) */
+same:
+asm push di
+asm mov ax,0a000h  /* and put the pixel into a000:ofset */
+asm mov es,ax
+asm mov di,ofs
+asm mov al,col
+asm mov [es:di],al
+asm pop di
+}
+
+/* This code dos NOT detect if a VESA-card is present */
+/* but most cards are VESA compatible so it's not a big problem */
+void main(void)
+{
+int i,j,w;
+char ch;
+printinfo();
+setVesaMode(0x101); /* change into 640*480 256 colors (vesa mode 101h) */
+/* setVesaMode words on all (modern) cards */
+
+bank=0;
+w=48;       /* how the screen will look depends on w */
+getpal();
+coolpal();  /* set a smooth palette, comment this line out for a strange effect */
+do
+{
+        for(j=0;j&lt;480;j++) /* draw a screen */
+        {
+                for(i=0;i&lt;640;i++) /* I just experimented until I got this formula */
+                putpixel(i,j,i*j+i*i+j*j+i*j*w); /* change this formula for different effects */
+                /* for instance try sin &amp; cos combinations . . . */
+        }
+
+        do
+        {
+                cyclepal();      /* cycle the palette until a key is pressed */
+        }while(!kbhit());
+        ch=getch();        /* check what key was pressed */
+
+        switch(ch)         /* and react to the keypress */
+        {
+                case ' ':  getch(); /* if space, stop cycling */
+
+                break;
+                case '+':  w++;    /* case +, increase w */
+                break;
+                case '-':  w--;    /* case -, decrease w */
+                break;
+        }
+}while(ch!='\x1b');    /* Escape ends */
+
+
+setmode(3);             /* get back to dos mode */
+printf("\nw = %d\n",w); /* write the last w just incase it was really cool */
+                                                                                                /* and you want know what value w had */
+}
+</pre>
+<p>
+<center> 
+&lt; -------------------------------Cut---Here----------------------------------- 
+&gt; </center>
+<p>
+download <a href="svga.zip">svga.zip</a>
+<p>
+<hr>
+<p>
+<pre>
+1996-05-14 Abe Racadabra
+
+s-mail: Albert Veli
+        Spisringsg. 9
+        724 76 V&aumlster;&arings;
+        SWEDEN
+</pre>
+<address>
+mail:<a href="mailto:dat94avi@bilbo.mdh.se">dat94avi@bilbo.mdh.se</a>.
+</address>
+<br>
+Back to <a href="./">The
+demoschool</a>.
+</body></html>
