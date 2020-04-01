@@ -1,6 +1,6 @@
 # abes-demo-school
 
-Please check this out at https://retrotietokoneetjapelit.github.io/abes-demo-school
+Please check this out at https://retrotietokoneet.github.io/abes-demo-school
 
 ## What's this?
 
